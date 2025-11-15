@@ -99,6 +99,36 @@
     font-size: 16px;
   }
 
+    /* ▼ ブース番号検索ボックス */
+  #searchBox {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  #searchInput {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  #btnSearch {
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    background: #4a6cf7;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #btnSearch:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.25);
+  }
+
+
   #panel img {
     max-width: 100%;
     height: auto;
@@ -179,10 +209,10 @@
       style="left:53.8%; top:22.8%; width:0.6%; height:0.4%;"></div>
 
     <div class="booth" data-code="E30" data-status="maybe"
-      style="left:18.5%; top:31%; width:0.6%; height:0.4%;"></div>
+      style="left:18.5%; top:43.6%; width:0.6%; height:0.4%;"></div>
 
     <div class="booth" data-code="L23" data-status="reserved"
-      style="left:43.4%; top:16.8%; width:0.6%; height:0.4%;"></div>
+      style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
 
   </div>
 
@@ -191,6 +221,13 @@
 
 <!-- 右：詳細 -->
 <div id="panel">
+
+  <!-- ★ ここが新しく追加する検索ボックス -->
+  <div id="searchBox">
+    <input id="searchInput" type="text" placeholder="ブース番号（例：L12）">
+    <button id="btnSearch">検索</button>
+  </div>
+
   <h2>ブースをタップしてください</h2>
   <div id="detail"></div>
 
@@ -199,6 +236,7 @@
     <button id="btnClear">↩ 元に戻す</button>
   </div>
 </div>
+
 
 <script>
 const boothData = {
@@ -241,13 +279,13 @@ function showBooth(code){
   document.querySelector("#panel h2")
       .textContent = `【${code}】${data.circle}`;
 
-let html = `
+  let html = `
     <p><strong>ゲーム：</strong>${data.game}</p>
-    <p><strong>料金：</strong>${data.price||"-"}</p>
-    <p><strong>予約：</strong>${data.reserve||"-"}</p>
-    <p><strong>引取時間：</strong>${data.pickup||"-"}</p>
-    <p><strong>備考：</strong>${data.note||"-"}</p>
-`;
+    <p><strong>料金：</strong>${data.price || "-"}</p>
+    <p><strong>予約：</strong>${data.reserve || "-"}</p>
+    <p><strong>引取時間：</strong>${data.pickup || "-"}</p>
+    <p><strong>備考：</strong>${data.note || "-"}</p>
+  `;
 
   if(data.image){
     html += `<img src="${data.image}">`;
@@ -258,7 +296,6 @@ let html = `
   // ★ ブースを切り替えたらボタンの見た目も更新
   refreshStateButtons();
 }
-
 
 /* 状態保存・復元 */
 function setState(code, state){
@@ -289,9 +326,8 @@ function refreshStateButtons() {
   const btnBought = document.getElementById("btnBought");
   const btnClear  = document.getElementById("btnClear");
 
-  // いったん両方リセット
+  // いったんリセット
   btnBought.classList.remove("state-on");
-  // （今は「元に戻す」はON状態にはしないので何もしない）
 
   if (!currentBooth) return;
 
@@ -305,48 +341,113 @@ function refreshStateButtons() {
     btnBought.classList.add("state-on");
   }
 }
+
+// ★ 選択解除（余白クリック用）
 function clearSelection() {
-  // すべての選択状態を外す
   document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
 
-  // 詳細パネルを初期状態に戻す
   currentBooth = null;
   document.querySelector("#panel h2").textContent = "ブースをタップしてください";
   document.getElementById("detail").innerHTML = "";
-  
-  // ボタンの見た目リセット
+
   refreshStateButtons();
 }
 
+/* ブースのクリックイベント */
+document.querySelectorAll(".booth").forEach(el => {
+  const saved = localStorage.getItem("state_" + el.dataset.code);
+  if (saved) el.dataset.state = saved;
 
-document.querySelectorAll(".booth").forEach(el=>{
-  const saved=localStorage.getItem("state_"+el.dataset.code);
-  if(saved) el.dataset.state=saved;
-
-  el.addEventListener("click",()=>{
-    document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
+  el.addEventListener("click", () => {
+    document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
     el.classList.add("selected");
     showBooth(el.dataset.code);
   });
 });
 
-document.getElementById("btnBought").onclick=()=>{ if(currentBooth) setState(currentBooth,"bought"); };
-document.getElementById("btnClear").onclick =()=>{ if(currentBooth) setState(currentBooth,"none"); };
+/* 購入済み / 元に戻す ボタン */
+document.getElementById("btnBought").onclick = () => {
+  if (currentBooth) setState(currentBooth, "bought");
+};
+document.getElementById("btnClear").onclick = () => {
+  if (currentBooth) setState(currentBooth, "none");
+};
 
-// ▼ mapWrapper にイベントを付ける（重要！）
+/* ★ ここ重要：mapInner / coordDisp をちゃんと取得する */
+const mapInner   = document.getElementById("mapInner");
+const coordDisp  = document.getElementById("coordDisplay");
 const mapWrapper = document.getElementById("mapWrapper");
 
-mapWrapper.addEventListener("click", (e) => {
+/* ★ 検索ボックスと検索ボタン */
+const searchInput  = document.getElementById("searchInput");
+const searchButton = document.getElementById("btnSearch");
 
-  // target が booth のときは選択解除しない（= 普通のクリック）
-  if (e.target.classList.contains("booth")) return;
+/* ★ 指定したブースコードを選択＆スクロールする関数 */
+function goToBooth(codeRaw) {
+  if (!codeRaw) return;
 
-  // ▼ 選択解除
-  clearSelection();
+  // 前後の空白カット＆大文字化（l12 → L12 でもOKにする）
+  const code = codeRaw.trim().toUpperCase();
 
+  // data-code="L12" みたいな要素を探す
+  const boothEl = document.querySelector(`.booth[data-code="${code}"]`);
+  if (!boothEl) {
+    alert(`ブース「${code}」は見つかりませんでした`);
+    return;
+  }
+
+  // いったん全ブースの選択解除
+  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
+
+  // このブースを選択
+  boothEl.classList.add("selected");
+  showBooth(code);
+
+  // ★ マップをそのブースの位置までスクロール
+  const wrapperRect = mapWrapper.getBoundingClientRect();
+  const boothRect   = boothEl.getBoundingClientRect();
+
+  const currentLeft = mapWrapper.scrollLeft;
+  const currentTop  = mapWrapper.scrollTop;
+
+  const offsetLeft = boothRect.left - wrapperRect.left + currentLeft;
+  const offsetTop  = boothRect.top  - wrapperRect.top  + currentTop;
+
+  mapWrapper.scrollTo({
+    left: Math.max(offsetLeft - wrapperRect.width  / 2, 0),
+    top:  Math.max(offsetTop  - wrapperRect.height / 2, 0),
+    behavior: "smooth"
+  });
+}
+
+/* ★ 検索ボタンを押したとき */
+searchButton.addEventListener("click", () => {
+  goToBooth(searchInput.value);
+});
+
+/* ★ 入力欄で Enter 押したとき */
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    goToBooth(searchInput.value);
+  }
 });
 
 
+/* mapInner クリック時に座標更新 */
+mapInner.addEventListener("click", (e) => {
+  const r = mapInner.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+
+  coordDisp.textContent =
+    `left:${(x / r.width * 100).toFixed(1)}% / top:${(y / r.height * 100).toFixed(1)}%`;
+});
+
+/* mapWrapper クリック時：ブース以外なら選択解除 */
+mapWrapper.addEventListener("click", (e) => {
+  if (e.target.classList.contains("booth")) return;
+  clearSelection();
+});
 </script>
 
 </body>
