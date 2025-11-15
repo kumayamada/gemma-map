@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ゲムマMAPビューア</title>
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    height: 100vh;
+  }
+  #mapWrapper {
+    position: relative;
+    flex: 3;
+    overflow: auto;
+    background: #eee;
+  }
+  #mapWrapper img {
+    display: block;
+    width: 100%;   /* 画面幅にフィット */
+    height: auto;
+  }
+/* 基本のブース枠（ベースは薄め） */
+.booth {
+  position: absolute;
+  border-radius: 2px;
+  border: 1px solid #999;
+  background: rgba(255, 255, 255, 0.01);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* ■ 必須（赤） */
+.booth[data-status="must"] {
+  background: rgba(255, 80, 80, 0.35);
+  border-color: #ff3b3b;
+}
+
+/* ■ 検討中（黄） */
+.booth[data-status="maybe"] {
+  background: rgba(255, 210, 0, 0.35);
+  border-color: #e6a700;
+}
+
+/* ■ 予約済み（青） */
+.booth[data-status="reserved"] {
+  background: rgba(0, 140, 255, 0.35);
+  border-color: #0090dd;
+}
+
+/* ★ 選択状態の色（ステータスごとに濃い色を適用） */
+.booth[data-status="must"].selected {
+  background: rgba(255, 0, 0, 0.75);
+  border-color: #ff1a1a;
+}
+
+.booth[data-status="maybe"].selected {
+  background: rgba(255, 180, 0, 0.75);
+  border-color: #cc8400;
+}
+
+.booth[data-status="reserved"].selected {
+  background: rgba(0, 120, 255, 0.75);
+  border-color: #0077ff;
+}
+
+
+/* ホバー時は少しだけ強調（PC用） */
+.booth:hover {
+  background: rgba(0, 128, 255, 0.15);
+}
+  #panel {
+    flex: 1;
+    border-left: 1px solid #ccc;
+    padding: 8px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: #fafafa;
+  }
+  #panel h2 {
+    margin-top: 0;
+    font-size: 16px;
+  }
+  #panel img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 左：マップ -->
+<div id="mapWrapper">
+  <!-- ★マップ画像ファイル名をここに -->
+  <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ">
+
+<div id="coordDisplay"
+     style="position:fixed; bottom:12px; left:12px; z-index:9999;
+            background:rgba(0,0,0,0.8); color:#fff;
+            padding:8px 12px; font-size:18px; border-radius:6px;">
+  左右% / 上下%：-
+</div>
+
+
+  <!-- ★ブースのクリック領域（位置は left/top を調整していく） -->
+<!-- L12（必須：赤） -->
+<div class="booth" data-code="L12" data-status="must"
+     style="left: 53.8%; top: 16.3%; width: 0.6%; height: 0.4%;"></div>
+
+<!-- E30（検討中：黄） -->
+<div class="booth" data-code="E30" data-status="maybe"
+     style="left: 18.5%; top: 31%; width: 0.6%; height: 0.4%;"></div>
+
+<!-- L23（予約済み：青） -->
+<div class="booth" data-code="L23" data-status="reserved"
+     style="left: 43.4%; top: 16.8%; width: 0.6%; height: 0.4%;"></div>
+
+</div>
+
+<!-- 右：詳細パネル -->
+<div id="panel">
+  <h2>ブースをタップしてください</h2>
+  <div id="detail"></div>
+</div>
+
+<script>
+  // ★ブースごとの情報（ここにExcelの内容を写していく）
+  const boothData = {
+    "L12": {
+      circle: "ぺろまる工房",
+      game:   "WicFluffy（ウィック・フラフィー）",
+      reserve:"予約名：オオタ",
+      pickup: "11:00〜12:00",
+      note:   "",
+      image:  "PIC_L12.jpg"   // 画像ファイルがなければ "" にする
+    },
+    "E30": {
+      circle: "てねずっとgames",
+      game:   "大きそうなかぶ",
+      reserve:"予約なし",
+      pickup: "",
+      note:   "",
+      image:  "PIC_E30.jpg"
+    },
+    "L23": {
+      circle: "茶茶屋",
+      game:   "扇舞",
+      reserve:"予約済み",
+      pickup: "15:00迄",
+      note:   "予約名：太田",
+      image:  "PIC_L23.jpg"
+    }
+  };
+
+const detail = document.getElementById("detail");
+const title  = document.querySelector("#panel h2");
+
+function showBooth(code) {
+  const data = boothData[code];
+  if (!data) return;
+
+  title.textContent = `【${code}】${data.circle}`;
+
+  let html = "";
+  html += `<p><strong>ゲーム：</strong>${data.game}</p>`;
+  html += `<p><strong>予約：</strong>${data.reserve || "-"}</p>`;
+  html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
+  html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;  // ← この行まで
+
+  if (data.image) {
+    html += `<img src="${data.image}" alt="${data.game}">`;
+  }
+
+  detail.innerHTML = html;
+}
+
+
+  // すべてのブース領域にクリックイベントを付ける
+document.querySelectorAll(".booth").forEach(el => {
+  el.addEventListener("click", () => {
+    const code = el.dataset.code;
+
+    // ★ 既に選択されていたブースの .selected を全部外す
+    document.querySelectorAll(".booth").forEach(b => {
+      b.classList.remove("selected");
+    });
+
+    // ★ 今クリックしたブースだけ .selected を付ける
+    el.classList.add("selected");
+
+    // 詳細表示
+    showBooth(code);
+  });
+});
+
+  // 画像上をクリックした位置の％を表示するデバッグ用
+  const mapWrapper = document.getElementById("mapWrapper");
+  const coordDisp = document.getElementById("coordDisplay");
+
+  mapWrapper.addEventListener("click", (e) => {
+    const rect = mapWrapper.getBoundingClientRect();
+
+    // スクロール量も含めて「ラッパの左上から何pxか」を出す
+    const xPx = mapWrapper.scrollLeft + (e.clientX - rect.left);
+    const yPx = mapWrapper.scrollTop  + (e.clientY - rect.top);
+
+    // CSSの left/top と同じ基準（mapWrapperの幅／高さ）で％に変換
+    const leftPercent = (xPx / rect.width)  * 100;
+    const topPercent  = (yPx / rect.height) * 100;
+
+    coordDisp.textContent =
+      `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
+  });
+
+</script>
+
+</body>
+</html>
