@@ -95,7 +95,7 @@
 <!-- 左：マップ -->
 <div id="mapWrapper">
   <!-- ★マップ画像ファイル名をここに -->
-  <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ">
+  <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ" id="mapImage">
 
 <div id="coordDisplay"
      style="position:fixed; bottom:12px; left:12px; z-index:9999;
@@ -108,7 +108,7 @@
   <!-- ★ブースのクリック領域（位置は left/top を調整していく） -->
 <!-- L12（必須：赤） -->
 <div class="booth" data-code="L12" data-status="must"
-     style="left: 53.8%; top: 16.3%; width: 0.6%; height: 0.4%;"></div>
+     style="left: 53.7%; top: 15.5%; width: 0.6%; height: 0.4%;"></div>
 
 <!-- E30（検討中：黄） -->
 <div class="booth" data-code="E30" data-status="maybe"
@@ -196,24 +196,25 @@ document.querySelectorAll(".booth").forEach(el => {
   });
 });
 
-  // 画像上をクリックした位置の％を表示するデバッグ用
-  const mapWrapper = document.getElementById("mapWrapper");
-  const coordDisp = document.getElementById("coordDisplay");
+ // 画像上をクリックした位置の％を表示するデバッグ用（画像基準）
+const mapImg   = document.getElementById("mapImage");
+const coordDisp = document.getElementById("coordDisplay");
 
-  mapWrapper.addEventListener("click", (e) => {
-    const rect = mapWrapper.getBoundingClientRect();
+mapImg.addEventListener("click", (e) => {
+  const rect = mapImg.getBoundingClientRect();
 
-    // スクロール量も含めて「ラッパの左上から何pxか」を出す
-    const xPx = mapWrapper.scrollLeft + (e.clientX - rect.left);
-    const yPx = mapWrapper.scrollTop  + (e.clientY - rect.top);
+  // 画像内のどこをクリックしたか（px）
+  const xPx = e.clientX - rect.left;
+  const yPx = e.clientY - rect.top;
 
-    // CSSの left/top と同じ基準（mapWrapperの幅／高さ）で％に変換
-    const leftPercent = (xPx / rect.width)  * 100;
-    const topPercent  = (yPx / rect.height) * 100;
+  // 画像の幅・高さに対する％
+  const leftPercent = (xPx / rect.width)  * 100;
+  const topPercent  = (yPx / rect.height) * 100;
 
-    coordDisp.textContent =
-      `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
-  });
+  coordDisp.textContent =
+    `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
+});
+
 
 </script>
 
