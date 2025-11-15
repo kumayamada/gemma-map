@@ -71,6 +71,19 @@
     background: rgba(0, 200, 100, 0.55);
     border-color: #00a060;
   }
+/* ■ 購入済み（グレー） */
+/* data-state="bought" が付いているブースをグレー表示 */
+.booth[data-state="bought"] {
+  background: rgba(170, 170, 170, 0.9);
+  border-color: #777;
+}
+
+/* （万が一選択中でも）購入済みは濃いグレーにしておく */
+.booth[data-state="bought"].selected {
+  background: rgba(140, 140, 140, 0.9);
+  border-color: #555;
+}
+
 
   #panel {
     flex: 1;
@@ -93,12 +106,40 @@
     border-radius: 4px;
   }
 
+  /* ▼ 状態ボタンまわりの見た目 */
+  #stateButtons {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   #stateButtons button {
     width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    font-size: 16px;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s, box-shadow 0.15s;
   }
+
+  /* 押した瞬間ちょっとだけ沈む感じ */
+  #stateButtons button:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+  }
+
+  /* 「購入済み」がONになっているときの見た目 */
+  #stateButtons button.state-on {
+    background: #555;
+    color: #fff;
+    border-color: #555;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    font-weight: 600;
+  }
+
 
   #coordDisplay {
     position: fixed;
@@ -142,7 +183,7 @@
   <div id="detail"></div>
 
   <div id="stateButtons">
-    <button id="btnBought">✔ 購入済みにする</button>
+    <button id="btnBought">✔ 購入済み</button>
     <button id="btnClear">元に戻す</button>
   </div>
 </div>
@@ -197,20 +238,58 @@ function showBooth(code){
   }
 
   document.getElementById("detail").innerHTML = html;
+
+  // ★ ブースを切り替えたらボタンの見た目も更新
+  refreshStateButtons();
 }
 
+
 /* 状態保存・復元 */
-function setState(code,state){
-  const el=document.querySelector(`.booth[data-code="${code}"]`);
-  if(!el) return;
-  if(state==="none"){
+function setState(code, state){
+  const el = document.querySelector(`.booth[data-code="${code}"]`);
+  if (!el) return;
+
+  if (state === "none") {
     el.removeAttribute("data-state");
-    localStorage.removeItem("state_"+code);
-  }else{
-    el.dataset.state=state;
-    localStorage.setItem("state_"+code,state);
+    localStorage.removeItem("state_" + code);
+  } else {
+    el.dataset.state = state;
+    localStorage.setItem("state_" + code, state);
+  }
+
+  // ★ 購入済みにした瞬間、選択状態は外して「グレーだけ」にする
+  if (state === "bought") {
+    el.classList.remove("selected");
+  }
+
+  // ★ 今開いてるブースだったら、ボタンの見た目を更新
+  if (code === currentBooth) {
+    refreshStateButtons();
   }
 }
+
+// ★ 現在のブース状態に合わせてボタンの見た目を更新
+function refreshStateButtons() {
+  const btnBought = document.getElementById("btnBought");
+  const btnClear  = document.getElementById("btnClear");
+
+  // いったん両方リセット
+  btnBought.classList.remove("state-on");
+  // （今は「元に戻す」はON状態にはしないので何もしない）
+
+  if (!currentBooth) return;
+
+  const el = document.querySelector(`.booth[data-code="${currentBooth}"]`);
+  if (!el) return;
+
+  const state = el.dataset.state || "none";
+
+  if (state === "bought") {
+    // ★ このブースが購入済みなら、ボタンを「押されている」見た目に
+    btnBought.classList.add("state-on");
+  }
+}
+
 
 document.querySelectorAll(".booth").forEach(el=>{
   const saved=localStorage.getItem("state_"+el.dataset.code);
