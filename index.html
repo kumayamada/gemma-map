@@ -193,15 +193,17 @@ const boothData = {
   "L12": {
     circle:"ぺろまる工房",
     game:"WicFluffy（ウィック・フラフィー）",
-    reserve:"予約名：オオタ",
+    price:"3,000円",
+    reserve:"済",
     pickup:"11:00〜12:00",
-    note:"",
+    note:"予約名⇒オオタ",
     image:"PIC_L12.jpg"
   },
   "E30": {
     circle:"てねずっとgames",
     game:"大きそうなかぶ",
-    reserve:"予約なし",
+    price:"2,000円",
+    reserve:"未",
     pickup:"",
     note:"",
     image:"PIC_E30.jpg"
@@ -209,9 +211,10 @@ const boothData = {
   "L23": {
     circle:"茶茶屋",
     game:"扇舞",
-    reserve:"予約済み",
+    price:"4,000円",
+    reserve:"済",
     pickup:"15:00迄",
-    note:"予約名：太田",
+    note:"予約名⇒太田",
     image:"PIC_L23.jpg"
   }
 };
@@ -226,12 +229,13 @@ function showBooth(code){
   document.querySelector("#panel h2")
       .textContent = `【${code}】${data.circle}`;
 
-  let html = `
+let html = `
     <p><strong>ゲーム：</strong>${data.game}</p>
+    <p><strong>料金：</strong>${data.price||"-"}</p>
     <p><strong>予約：</strong>${data.reserve||"-"}</p>
     <p><strong>引取時間：</strong>${data.pickup||"-"}</p>
     <p><strong>備考：</strong>${data.note||"-"}</p>
-  `;
+`;
 
   if(data.image){
     html += `<img src="${data.image}">`;
@@ -289,6 +293,18 @@ function refreshStateButtons() {
     btnBought.classList.add("state-on");
   }
 }
+function clearSelection() {
+  // すべての選択状態を外す
+  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
+
+  // 詳細パネルを初期状態に戻す
+  currentBooth = null;
+  document.querySelector("#panel h2").textContent = "ブースをタップしてください";
+  document.getElementById("detail").innerHTML = "";
+  
+  // ボタンの見た目リセット
+  refreshStateButtons();
+}
 
 
 document.querySelectorAll(".booth").forEach(el=>{
@@ -305,15 +321,20 @@ document.querySelectorAll(".booth").forEach(el=>{
 document.getElementById("btnBought").onclick=()=>{ if(currentBooth) setState(currentBooth,"bought"); };
 document.getElementById("btnClear").onclick =()=>{ if(currentBooth) setState(currentBooth,"none"); };
 
-const mapInner=document.getElementById("mapInner");
-const coordDisp=document.getElementById("coordDisplay");
+// ▼ mapWrapper にイベントを付ける（重要！）
+const mapWrapper = document.getElementById("mapWrapper");
 
-mapInner.addEventListener("click",(e)=>{
-  const r=mapInner.getBoundingClientRect();
-  const x=e.clientX-r.left;
-  const y=e.clientY-r.top;
-  coordDisp.textContent=`left:${(x/r.width*100).toFixed(1)}% / top:${(y/r.height*100).toFixed(1)}%`;
+mapWrapper.addEventListener("click", (e) => {
+
+  // target が booth のときは選択解除しない（= 普通のクリック）
+  if (e.target.classList.contains("booth")) return;
+
+  // ▼ 選択解除
+  clearSelection();
+
 });
+
+
 </script>
 
 </body>
