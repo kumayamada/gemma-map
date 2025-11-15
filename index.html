@@ -11,14 +11,12 @@
     height: 100vh;
   }
 
-  /* 左側：マップエリア */
   #mapWrapper {
     flex: 3;
     overflow: auto;
     background: #eee;
   }
 
-  /* 画像＋ブースをまとめる箱（ここを基準に絶対配置する） */
   #mapInner {
     position: relative;
     display: inline-block;
@@ -30,9 +28,15 @@
     height: auto;
   }
 
-  /* 基本のブース枠（ベースは薄め） */
+#mapInner {
+  width: 100%;
+  max-width: 3451px;   /* ← 地図画像の実寸に合わせて固定！ */
+  margin: 0 auto;      /* ← 中央寄せ */
+  position: relative;  /* ← ボックス内のブース位置固定に必須 */
+}
+
   .booth {
-    position: absolute;          /* ← #mapInner を基準にする */
+    position: absolute;
     border-radius: 1px;
     border: 0.5px solid #999;
     background: rgba(255, 255, 255, 0.01);
@@ -40,46 +44,34 @@
     transition: background 0.2s, border-color 0.2s;
   }
 
-  /* ■ 必須（赤） */
   .booth[data-status="must"] {
     background: rgba(255, 80, 80, 0.35);
     border-color: #ff3b3b;
   }
-
-  /* ■ 検討中（黄） */
   .booth[data-status="maybe"] {
     background: rgba(255, 210, 0, 0.35);
     border-color: #e6a700;
   }
-
-  /* ■ 予約済み（青） */
   .booth[data-status="reserved"] {
     background: rgba(0, 140, 255, 0.35);
     border-color: #0090dd;
   }
 
-  /* ★ 選択状態の色（ステータスごとに濃い色を適用） */
   .booth[data-status="must"].selected {
     background: rgba(255, 0, 0, 0.75);
-    border-color: #ff1a1a;
   }
-
   .booth[data-status="maybe"].selected {
     background: rgba(255, 180, 0, 0.75);
-    border-color: #cc8400;
   }
-
   .booth[data-status="reserved"].selected {
     background: rgba(0, 120, 255, 0.75);
-    border-color: #0077ff;
   }
 
-  /* ホバー時は少しだけ強調（PC用） */
-  .booth:hover {
-    background: rgba(0, 128, 255, 0.15);
+  .booth[data-state="bought"] {
+    background: rgba(0, 200, 100, 0.55);
+    border-color: #00a060;
   }
 
-  /* 右側：詳細パネル */
   #panel {
     flex: 1;
     border-left: 1px solid #ccc;
@@ -88,10 +80,12 @@
     overflow: auto;
     background: #fafafa;
   }
+
   #panel h2 {
     margin-top: 0;
     font-size: 16px;
   }
+
   #panel img {
     max-width: 100%;
     height: auto;
@@ -99,7 +93,13 @@
     border-radius: 4px;
   }
 
-  /* 座標表示ラベル */
+  #stateButtons button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    font-size: 16px;
+  }
+
   #coordDisplay {
     position: fixed;
     bottom: 12px;
@@ -113,126 +113,129 @@
   }
 </style>
 </head>
+
 <body>
 
 <!-- 左：マップ -->
 <div id="mapWrapper">
   <div id="mapInner">
-    <!-- ★マップ画像ファイル -->
-    <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ" id="mapImage">
+    <img src="map-day1.png" id="mapImage" alt="map">
 
-    <!-- ★ブースのクリック領域（位置は left/top を調整していく） -->
-    <!-- L12（必須：赤） -->
+    <!-- ▼ブース -->
     <div class="booth" data-code="L12" data-status="must"
-         style="left: 53.8%; top: 22.8%; width: 0.6%; height: 0.4%;"></div>
+      style="left:53.8%; top:22.8%; width:0.6%; height:0.4%;"></div>
 
-    <!-- E30（検討中：黄） -->
     <div class="booth" data-code="E30" data-status="maybe"
-         style="left: 18.5%; top: 31%; width: 0.6%; height: 0.4%;"></div>
+      style="left:18.5%; top:31%; width:0.6%; height:0.4%;"></div>
 
-    <!-- L23（予約済み：青） -->
     <div class="booth" data-code="L23" data-status="reserved"
-         style="left: 43.4%; top: 16.8%; width: 0.6%; height: 0.4%;"></div>
+      style="left:43.4%; top:16.8%; width:0.6%; height:0.4%;"></div>
+
   </div>
 
-  <!-- 座標表示用ラベル -->
   <div id="coordDisplay">左右% / 上下%：-</div>
 </div>
 
-<!-- 右：詳細パネル -->
+<!-- 右：詳細 -->
 <div id="panel">
   <h2>ブースをタップしてください</h2>
   <div id="detail"></div>
+
+  <div id="stateButtons">
+    <button id="btnBought">✔ 購入済みにする</button>
+    <button id="btnClear">元に戻す</button>
+  </div>
 </div>
 
 <script>
-  // ★ブースごとの情報
-  const boothData = {
-    "L12": {
-      circle: "ぺろまる工房",
-      game:   "WicFluffy（ウィック・フラフィー）",
-      reserve:"予約名：オオタ",
-      pickup: "11:00〜12:00",
-      note:   "",
-      image:  "PIC_L12.jpg"
-    },
-    "E30": {
-      circle: "てねずっとgames",
-      game:   "大きそうなかぶ",
-      reserve:"予約なし",
-      pickup: "",
-      note:   "",
-      image:  "PIC_E30.jpg"
-    },
-    "L23": {
-      circle: "茶茶屋",
-      game:   "扇舞",
-      reserve:"予約済み",
-      pickup: "15:00迄",
-      note:   "予約名：太田",
-      image:  "PIC_L23.jpg"
-    }
-  };
+const boothData = {
+  "L12": {
+    circle:"ぺろまる工房",
+    game:"WicFluffy（ウィック・フラフィー）",
+    reserve:"予約名：オオタ",
+    pickup:"11:00〜12:00",
+    note:"",
+    image:"PIC_L12.jpg"
+  },
+  "E30": {
+    circle:"てねずっとgames",
+    game:"大きそうなかぶ",
+    reserve:"予約なし",
+    pickup:"",
+    note:"",
+    image:"PIC_E30.jpg"
+  },
+  "L23": {
+    circle:"茶茶屋",
+    game:"扇舞",
+    reserve:"予約済み",
+    pickup:"15:00迄",
+    note:"予約名：太田",
+    image:"PIC_L23.jpg"
+  }
+};
 
-  const detail = document.getElementById("detail");
-  const title  = document.querySelector("#panel h2");
+let currentBooth = null;
 
-  function showBooth(code) {
-    const data = boothData[code];
-    if (!data) return;
+function showBooth(code){
+  currentBooth = code;
+  const data = boothData[code];
+  if(!data) return;
 
-    title.textContent = `【${code}】${data.circle}`;
+  document.querySelector("#panel h2")
+      .textContent = `【${code}】${data.circle}`;
 
-    let html = "";
-    html += `<p><strong>ゲーム：</strong>${data.game}</p>`;
-    html += `<p><strong>予約：</strong>${data.reserve || "-"}</p>`;
-    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
-    html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;
-    if (data.image) {
-      html += `<img src="${data.image}" alt="${data.game}">`;
-    }
+  let html = `
+    <p><strong>ゲーム：</strong>${data.game}</p>
+    <p><strong>予約：</strong>${data.reserve||"-"}</p>
+    <p><strong>引取時間：</strong>${data.pickup||"-"}</p>
+    <p><strong>備考：</strong>${data.note||"-"}</p>
+  `;
 
-    detail.innerHTML = html;
+  if(data.image){
+    html += `<img src="${data.image}">`;
   }
 
-  // すべてのブース領域にクリックイベントを付ける
-  document.querySelectorAll(".booth").forEach(el => {
-    el.addEventListener("click", () => {
-      const code = el.dataset.code;
+  document.getElementById("detail").innerHTML = html;
+}
 
-      // 既に選択されていたブースの .selected を全部外す
-      document.querySelectorAll(".booth").forEach(b => {
-        b.classList.remove("selected");
-      });
+/* 状態保存・復元 */
+function setState(code,state){
+  const el=document.querySelector(`.booth[data-code="${code}"]`);
+  if(!el) return;
+  if(state==="none"){
+    el.removeAttribute("data-state");
+    localStorage.removeItem("state_"+code);
+  }else{
+    el.dataset.state=state;
+    localStorage.setItem("state_"+code,state);
+  }
+}
 
-      // 今クリックしたブースだけ .selected を付ける
-      el.classList.add("selected");
+document.querySelectorAll(".booth").forEach(el=>{
+  const saved=localStorage.getItem("state_"+el.dataset.code);
+  if(saved) el.dataset.state=saved;
 
-      // 詳細表示
-      showBooth(code);
-    });
+  el.addEventListener("click",()=>{
+    document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
+    el.classList.add("selected");
+    showBooth(el.dataset.code);
   });
+});
 
-  // 画像／マップ内でのクリック位置を％表示（mapInner基準）
-  const mapInner   = document.getElementById("mapInner");
-  const coordDisp  = document.getElementById("coordDisplay");
+document.getElementById("btnBought").onclick=()=>{ if(currentBooth) setState(currentBooth,"bought"); };
+document.getElementById("btnClear").onclick =()=>{ if(currentBooth) setState(currentBooth,"none"); };
 
-  mapInner.addEventListener("click", (e) => {
-    const rect = mapInner.getBoundingClientRect();
+const mapInner=document.getElementById("mapInner");
+const coordDisp=document.getElementById("coordDisplay");
 
-    const xPx = e.clientX - rect.left;
-    const yPx = e.clientY - rect.top;
-
-    const leftPercent = (xPx / rect.width)  * 100;
-    const topPercent  = (yPx / rect.height) * 100;
-
-    coordDisp.textContent =
-      `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
-  });
+mapInner.addEventListener("click",(e)=>{
+  const r=mapInner.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+  coordDisp.textContent=`left:${(x/r.width*100).toFixed(1)}% / top:${(y/r.height*100).toFixed(1)}%`;
+});
 </script>
 
 </body>
 </html>
-
-
-
