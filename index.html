@@ -10,66 +10,76 @@
     display: flex;
     height: 100vh;
   }
+
+  /* 左側：マップエリア */
   #mapWrapper {
-    position: relative;
     flex: 3;
     overflow: auto;
     background: #eee;
   }
-  #mapWrapper img {
+
+  /* 画像＋ブースをまとめる箱（ここを基準に絶対配置する） */
+  #mapInner {
+    position: relative;
+    display: inline-block;
+  }
+
+  #mapInner img {
     display: block;
-    width: 100%;   /* 画面幅にフィット */
+    max-width: 100%;
     height: auto;
   }
-/* 基本のブース枠（ベースは薄め） */
-.booth {
-  position: absolute;
-  border-radius: 2px;
-  border: 1px solid #999;
-  background: rgba(255, 255, 255, 0.01);
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
 
-/* ■ 必須（赤） */
-.booth[data-status="must"] {
-  background: rgba(255, 80, 80, 0.35);
-  border-color: #ff3b3b;
-}
+  /* 基本のブース枠（ベースは薄め） */
+  .booth {
+    position: absolute;          /* ← #mapInner を基準にする */
+    border-radius: 2px;
+    border: 1px solid #999;
+    background: rgba(255, 255, 255, 0.01);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
 
-/* ■ 検討中（黄） */
-.booth[data-status="maybe"] {
-  background: rgba(255, 210, 0, 0.35);
-  border-color: #e6a700;
-}
+  /* ■ 必須（赤） */
+  .booth[data-status="must"] {
+    background: rgba(255, 80, 80, 0.35);
+    border-color: #ff3b3b;
+  }
 
-/* ■ 予約済み（青） */
-.booth[data-status="reserved"] {
-  background: rgba(0, 140, 255, 0.35);
-  border-color: #0090dd;
-}
+  /* ■ 検討中（黄） */
+  .booth[data-status="maybe"] {
+    background: rgba(255, 210, 0, 0.35);
+    border-color: #e6a700;
+  }
 
-/* ★ 選択状態の色（ステータスごとに濃い色を適用） */
-.booth[data-status="must"].selected {
-  background: rgba(255, 0, 0, 0.75);
-  border-color: #ff1a1a;
-}
+  /* ■ 予約済み（青） */
+  .booth[data-status="reserved"] {
+    background: rgba(0, 140, 255, 0.35);
+    border-color: #0090dd;
+  }
 
-.booth[data-status="maybe"].selected {
-  background: rgba(255, 180, 0, 0.75);
-  border-color: #cc8400;
-}
+  /* ★ 選択状態の色（ステータスごとに濃い色を適用） */
+  .booth[data-status="must"].selected {
+    background: rgba(255, 0, 0, 0.75);
+    border-color: #ff1a1a;
+  }
 
-.booth[data-status="reserved"].selected {
-  background: rgba(0, 120, 255, 0.75);
-  border-color: #0077ff;
-}
+  .booth[data-status="maybe"].selected {
+    background: rgba(255, 180, 0, 0.75);
+    border-color: #cc8400;
+  }
 
+  .booth[data-status="reserved"].selected {
+    background: rgba(0, 120, 255, 0.75);
+    border-color: #0077ff;
+  }
 
-/* ホバー時は少しだけ強調（PC用） */
-.booth:hover {
-  background: rgba(0, 128, 255, 0.15);
-}
+  /* ホバー時は少しだけ強調（PC用） */
+  .booth:hover {
+    background: rgba(0, 128, 255, 0.15);
+  }
+
+  /* 右側：詳細パネル */
   #panel {
     flex: 1;
     border-left: 1px solid #ccc;
@@ -88,36 +98,45 @@
     margin-top: 8px;
     border-radius: 4px;
   }
+
+  /* 座標表示ラベル */
+  #coordDisplay {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 9999;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 18px;
+    border-radius: 6px;
+  }
 </style>
 </head>
 <body>
 
 <!-- 左：マップ -->
 <div id="mapWrapper">
-  <!-- ★マップ画像ファイル名をここに -->
-  <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ" id="mapImage">
+  <div id="mapInner">
+    <!-- ★マップ画像ファイル -->
+    <img src="map-day1.png" alt="ゲムマ2025秋 Day1 マップ" id="mapImage">
 
-<div id="coordDisplay"
-     style="position:fixed; bottom:12px; left:12px; z-index:9999;
-            background:rgba(0,0,0,0.8); color:#fff;
-            padding:8px 12px; font-size:18px; border-radius:6px;">
-  左右% / 上下%：-
-</div>
+    <!-- ★ブースのクリック領域（位置は left/top を調整していく） -->
+    <!-- L12（必須：赤） -->
+    <div class="booth" data-code="L12" data-status="must"
+         style="left: 53.7%; top: 15.5%; width: 0.6%; height: 0.4%;"></div>
 
+    <!-- E30（検討中：黄） -->
+    <div class="booth" data-code="E30" data-status="maybe"
+         style="left: 18.5%; top: 31%; width: 0.6%; height: 0.4%;"></div>
 
-  <!-- ★ブースのクリック領域（位置は left/top を調整していく） -->
-<!-- L12（必須：赤） -->
-<div class="booth" data-code="L12" data-status="must"
-     style="left: 53.6%; top: 22.7%; width: 0.6%; height: 0.4%;"></div>
+    <!-- L23（予約済み：青） -->
+    <div class="booth" data-code="L23" data-status="reserved"
+         style="left: 43.4%; top: 16.8%; width: 0.6%; height: 0.4%;"></div>
+  </div>
 
-<!-- E30（検討中：黄） -->
-<div class="booth" data-code="E30" data-status="maybe"
-     style="left: 18.5%; top: 31%; width: 0.6%; height: 0.4%;"></div>
-
-<!-- L23（予約済み：青） -->
-<div class="booth" data-code="L23" data-status="reserved"
-     style="left: 43.4%; top: 16.8%; width: 0.6%; height: 0.4%;"></div>
-
+  <!-- 座標表示用ラベル -->
+  <div id="coordDisplay">左右% / 上下%：-</div>
 </div>
 
 <!-- 右：詳細パネル -->
@@ -127,7 +146,7 @@
 </div>
 
 <script>
-  // ★ブースごとの情報（ここにExcelの内容を写していく）
+  // ★ブースごとの情報
   const boothData = {
     "L12": {
       circle: "ぺろまる工房",
@@ -135,7 +154,7 @@
       reserve:"予約名：オオタ",
       pickup: "11:00〜12:00",
       note:   "",
-      image:  "PIC_L12.jpg"   // 画像ファイルがなければ "" にする
+      image:  "PIC_L12.jpg"
     },
     "E30": {
       circle: "てねずっとgames",
@@ -155,69 +174,62 @@
     }
   };
 
-const detail = document.getElementById("detail");
-const title  = document.querySelector("#panel h2");
+  const detail = document.getElementById("detail");
+  const title  = document.querySelector("#panel h2");
 
-function showBooth(code) {
-  const data = boothData[code];
-  if (!data) return;
+  function showBooth(code) {
+    const data = boothData[code];
+    if (!data) return;
 
-  title.textContent = `【${code}】${data.circle}`;
+    title.textContent = `【${code}】${data.circle}`;
 
-  let html = "";
-  html += `<p><strong>ゲーム：</strong>${data.game}</p>`;
-  html += `<p><strong>予約：</strong>${data.reserve || "-"}</p>`;
-  html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
-  html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;  // ← この行まで
+    let html = "";
+    html += `<p><strong>ゲーム：</strong>${data.game}</p>`;
+    html += `<p><strong>予約：</strong>${data.reserve || "-"}</p>`;
+    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
+    html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;
+    if (data.image) {
+      html += `<img src="${data.image}" alt="${data.game}">`;
+    }
 
-  if (data.image) {
-    html += `<img src="${data.image}" alt="${data.game}">`;
+    detail.innerHTML = html;
   }
 
-  detail.innerHTML = html;
-}
-
-
   // すべてのブース領域にクリックイベントを付ける
-document.querySelectorAll(".booth").forEach(el => {
-  el.addEventListener("click", () => {
-    const code = el.dataset.code;
+  document.querySelectorAll(".booth").forEach(el => {
+    el.addEventListener("click", () => {
+      const code = el.dataset.code;
 
-    // ★ 既に選択されていたブースの .selected を全部外す
-    document.querySelectorAll(".booth").forEach(b => {
-      b.classList.remove("selected");
+      // 既に選択されていたブースの .selected を全部外す
+      document.querySelectorAll(".booth").forEach(b => {
+        b.classList.remove("selected");
+      });
+
+      // 今クリックしたブースだけ .selected を付ける
+      el.classList.add("selected");
+
+      // 詳細表示
+      showBooth(code);
     });
-
-    // ★ 今クリックしたブースだけ .selected を付ける
-    el.classList.add("selected");
-
-    // 詳細表示
-    showBooth(code);
   });
-});
 
- // 画像上をクリックした位置の％を表示するデバッグ用（画像基準）
-const mapImg   = document.getElementById("mapImage");
-const coordDisp = document.getElementById("coordDisplay");
+  // 画像／マップ内でのクリック位置を％表示（mapInner基準）
+  const mapInner   = document.getElementById("mapInner");
+  const coordDisp  = document.getElementById("coordDisplay");
 
-mapImg.addEventListener("click", (e) => {
-  const rect = mapImg.getBoundingClientRect();
+  mapInner.addEventListener("click", (e) => {
+    const rect = mapInner.getBoundingClientRect();
 
-  // 画像内のどこをクリックしたか（px）
-  const xPx = e.clientX - rect.left;
-  const yPx = e.clientY - rect.top;
+    const xPx = e.clientX - rect.left;
+    const yPx = e.clientY - rect.top;
 
-  // 画像の幅・高さに対する％
-  const leftPercent = (xPx / rect.width)  * 100;
-  const topPercent  = (yPx / rect.height) * 100;
+    const leftPercent = (xPx / rect.width)  * 100;
+    const topPercent  = (yPx / rect.height) * 100;
 
-  coordDisp.textContent =
-    `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
-});
-
-
+    coordDisp.textContent =
+      `left: ${leftPercent.toFixed(1)}% / top: ${topPercent.toFixed(1)}%`;
+  });
 </script>
 
 </body>
 </html>
-
