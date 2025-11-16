@@ -62,11 +62,21 @@
 
   #panel {
     flex: 1;
-    border-left: 1px solid #ccc;
-    background: #fafafa;
-    padding: 8px;
+    border-left: 1px solid #ddd;
+    background: #f3f4f6;      /* ほんのりグレーで、カードが白で映える */
+    padding: 16px;            /* ちょっと広めに */
     overflow: auto;
   }
+
+  /* 見出しとカードの間に余白 */
+  #panel h2 {
+    margin: 0 0 12px;
+  }
+
+  #detail {
+    margin-top: 4px;
+  }
+
 
   /* ▼ パネル内の画像サイズ調整 */
   #panel img {
@@ -179,24 +189,33 @@
       box-shadow: 0 0 0 0 rgba(255,255,255,0);
     }
   }
-  /* ▼ 複数ゲームをカード風に表示（E26 用） */
+  /* ▼ ゲーム情報カード（単品・複数 共通） */
   .game-block {
-    margin: 10px 0;
-    padding: 10px 12px;
-    border-radius: 10px;
+    margin: 16px 0;                         /* 上下の余白を少し広めに */
+    padding: 14px 16px;
+    border-radius: 16px;                    /* 角をしっかり丸く */
     background: #ffffff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 4px 12px rgba(15,23,42,0.12); /* 影を少し強めに */
+    border: 1px solid #e5e7eb;             /* 薄いグレーの枠線 */
   }
 
-  /* カード内の画像はパネルの幅に収める */
+  .game-block p {
+    margin: 4px 0;                          /* 行間をきゅっと整える */
+    font-size: 14px;
+  }
+
+  .game-block p strong {
+    font-weight: 600;
+  }
+
   .game-block img {
     display: block;
     max-width: 100%;
     height: auto;
-    margin-top: 6px;
-    border-radius: 6px;
+    margin-top: 8px;
+    border-radius: 10px;
   }
+
 
 
 </style>
