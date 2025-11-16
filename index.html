@@ -704,19 +704,71 @@ searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") goToBooth(searchInput.value);
 });
 
+// ▼ 入力文字列からブース要素を探す（ブース番号 or サークル名・ゲーム名の部分一致）
+function findBoothElement(raw) {
+  const q = raw.trim();
+  if (!q) return null;
+
+  // 1. まずブース番号として（大文字にして）探す
+  const code = q.toUpperCase();
+  let boothEl = document.querySelector(`.booth[data-code="${code}"]`);
+  if (boothEl) return boothEl;
+
+  // 2. 見つからなければ、サークル名・ゲーム名で部分一致検索
+  const lower = q.toLowerCase();
+  let matchedCode = null;
+
+  for (const [bCode, data] of Object.entries(boothData)) {
+    if (!data) continue;
+
+    const circle = (data.circle || "").toLowerCase();
+    const gamesText = Array.isArray(data.game)
+      ? data.game.map(g => g.game || "").join(" ").toLowerCase()
+      : (data.game || "").toLowerCase();
+
+    if (circle.includes(lower) || gamesText.includes(lower)) {
+      matchedCode = bCode;
+      break;  // 最初に見つかったものを採用
+    }
+  }
+
+  if (!matchedCode) return null;
+  boothEl = document.querySelector(`.booth[data-code="${matchedCode}"]`);
+  return boothEl;
+}
+
+
 function goToBooth(raw){
   if (!raw) return;
-  const code = raw.trim().toUpperCase();
-  const boothEl = document.querySelector(`.booth[data-code="${code}"]`);
+
+  // ① ブース番号 or サークル名からブース要素を探す
+  const boothEl = findBoothElement(raw);
   if (!boothEl) {
-    alert(`ブース「${code}」は見つかりませんでした`);
+    alert(`「${raw}」に一致するブース／サークルは見つかりませんでした`);
     return;
   }
 
+  const code = boothEl.dataset.code;
+  const day  = boothEl.dataset.day; // 1 or 2
+
+  // ② 日付タブ・マップを自動で切り替え
+  document.querySelectorAll("#dayTabs button").forEach(b => {
+    b.classList.toggle("active", b.dataset.day === day);
+  });
+  document.querySelectorAll(".mapInner").forEach(m => m.classList.remove("active"));
+  document.getElementById("mapInner-day" + day).classList.add("active");
+
+  // 日付を切り替えたらフィルターも反映
+  applyPriorityFilter();
+
+  // ③ 選択状態をリセットしてから対象ブースを選択
   document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
   boothEl.classList.add("selected");
+
+  // ④ 詳細パネルを更新
   showBooth(code);
 
+  // ⑤ マップ上で見える位置までスクロール
   boothEl.scrollIntoView({ behavior:"smooth", block:"center", inline:"center" });
 }
 
