@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ゲムマMAPビューア</title>
+
 <style>
   body {
     margin: 0;
@@ -15,271 +16,196 @@
     flex: 3;
     overflow: auto;
     background: #eee;
-  }
-
-  #mapInner {
     position: relative;
-    display: inline-block;
   }
 
-  #mapInner img {
+  /* ▼ マップ箱（1日目 / 2日目 共通） */
+  .mapInner {
+    position: relative;
+    display: none;         /* 最初は非表示 */
+    width: 100%;
+    max-width: 3451px;
+    margin: 0 auto;
+  }
+
+  .mapInner.active {
+    display: inline-block; /* 選択されたマップだけ表示 */
+  }
+
+  /* 画像 */
+  .mapInner img {
     display: block;
     max-width: 100%;
     height: auto;
   }
 
-#mapInner {
-  width: 100%;
-  max-width: 3451px;   /* ← 地図画像の実寸に合わせて固定！ */
-  margin: 0 auto;      /* ← 中央寄せ */
-  position: relative;  /* ← ボックス内のブース位置固定に必須 */
-}
-
   .booth {
     position: absolute;
     border-radius: 1px;
     border: 0.5px solid #999;
-    background: rgba(255, 255, 255, 0.01);
+    background: rgba(255,255,255,0.01);
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
+    transition: 0.2s;
   }
 
-  .booth[data-status="must"] {
-    background: rgba(255, 80, 80, 0.35);
-    border-color: #ff3b3b;
-  }
-  .booth[data-status="maybe"] {
-    background: rgba(255, 210, 0, 0.35);
-    border-color: #e6a700;
-  }
-  .booth[data-status="reserved"] {
-    background: rgba(0, 140, 255, 0.35);
-    border-color: #0090dd;
-  }
+  .booth[data-status="must"]     { background: rgba(255, 80, 80, 0.35); border-color: #ff3b3b; }
+  .booth[data-status="maybe"]    { background: rgba(255,210,  0, 0.35); border-color: #e6a700; }
+  .booth[data-status="reserved"] { background: rgba(  0,140,255,0.35); border-color: #0090dd; }
 
-  .booth[data-status="must"].selected {
-    background: rgba(255, 0, 0, 0.75);
-  }
-  .booth[data-status="maybe"].selected {
-    background: rgba(255, 180, 0, 0.75);
-  }
-  .booth[data-status="reserved"].selected {
-    background: rgba(0, 120, 255, 0.75);
-  }
+  .booth.selected[data-status="must"]     { background: rgba(255,  0,  0,0.75); }
+  .booth.selected[data-status="maybe"]    { background: rgba(255,180,  0,0.75); }
+  .booth.selected[data-status="reserved"] { background: rgba(  0,120,255,0.75); }
 
-  .booth[data-state="bought"] {
-    background: rgba(0, 200, 100, 0.55);
-    border-color: #00a060;
-  }
-/* ■ 購入済み（グレー） */
-/* data-state="bought" が付いているブースをグレー表示 */
-.booth[data-state="bought"] {
-  background: rgba(170, 170, 170, 0.9);
-  border-color: #777;
-}
-
-/* （万が一選択中でも）購入済みは濃いグレーにしておく */
-.booth[data-state="bought"].selected {
-  background: rgba(140, 140, 140, 0.9);
-  border-color: #555;
-}
-
+  /* 購入済み */
+  .booth[data-state="bought"] { background: rgba(170,170,170,0.9); border-color:#777; }
+  .booth[data-state="bought"].selected { background: rgba(140,140,140,0.9); border-color:#555; }
 
   #panel {
     flex: 1;
     border-left: 1px solid #ccc;
-    padding: 8px;
-    box-sizing: border-box;
-    overflow: auto;
     background: #fafafa;
+    padding: 8px;
+    overflow: auto;
   }
 
-  #panel h2 {
-    margin-top: 0;
-    font-size: 16px;
-  }
+/* ▼ パネル内の画像サイズ調整（追加） */
+#panel img {
+  max-width: 100%;
+  height: auto;
+  max-height: 300px;   /* ← 高さの上限。好みで調整 */
+  object-fit: contain;
+  margin-top: 8px;
+  border-radius: 4px;
+}
 
-    /* ▼ ブース番号検索ボックス */
-  #searchBox {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  #searchInput {
+
+  /* ▼ 日付タブ */
+  #dayTabs { display: flex; gap: 10px; margin-bottom: 12px; }
+  #dayTabs button {
     flex: 1;
-    padding: 6px 8px;
+    padding: 10px;
     font-size: 14px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-/* ▼ 検索ボタンは購入済みボタン（ON）と同じ色に */
-#btnSearch {
-  padding: 6px 10px;
-  font-size: 14px;
-  border-radius: 8px;
-
-  background: #444;               /* ← 購入済み（ON）と同じ色 */
-  color: #fff;
-  border: 1px solid #444;
-
-  font-weight: 600;
-  cursor: pointer;
-
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.35), 
-              0 1px 4px rgba(0,0,0,0.3);
-
-  transition: all 0.15s ease;
-}
-
-/* 押した瞬間の沈み込み */
-#btnSearch:active {
-  transform: translateY(2px);
-  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.35);
-}
-  /* ▼ 優先度フィルター（必須／検討／予約済み） */
-  #priorityFilter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 12px;
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
-  #priorityFilter label {
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    border-radius: 10px;
+    border: none;
+    background: #f0f0f0;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                -4px -4px 8px rgba(255,255,255,0.85);
     cursor: pointer;
+    font-weight: 600;
   }
-  #priorityFilter input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-  }
-
-
-
-
-  #panel img {
-    max-width: 100%;
-    height: auto;
-    margin-top: 8px;
-    border-radius: 4px;
+  #dayTabs button.active {
+    background: #444;
+    color: #fff;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3),
+                inset -2px -2px 4px rgba(255,255,255,0.6);
   }
 
- /* ▼ 状態ボタンまわりの見た目（両方このデザインに統一） */
-#stateButtons {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  /* ▼ 検索 */
+  #searchBox { display:flex; gap:6px; margin-bottom:8px; }
+  #searchInput {
+    flex:1; padding:6px 8px; border-radius:8px;
+    border:1px solid #ccc; font-size:14px;
+  }
+  #btnSearch {
+    padding:6px 10px; border-radius:8px;
+    background:#444; color:#fff; border:1px solid #444;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.35),
+                0 1px 4px rgba(0,0,0,0.3);
+    cursor:pointer;
+  }
 
-/* ★ 購入済み・元に戻すボタンを非表示にする */
-#stateButtons {
-  display: none;
-}
+  /* ▼ 優先度フィルター */
+  #priorityFilter { display:flex; flex-wrap:wrap; gap:6px 12px; margin-bottom:8px; font-size:13px; }
+  #priorityFilter label { display:flex; align-items:center; gap:3px; }
 
+  /* ▼ 状態ボタン */
+  #stateButtons { display:none; flex-direction:column; gap:10px; margin-top:12px; }
+  #stateButtons button {
+    width:100%; padding:12px; border-radius:12px; border:none;
+    background:#f0f0f0; cursor:pointer; font-size:15px; font-weight:600;
+    box-shadow:4px 4px 8px rgba(0,0,0,0.15),
+               -4px -4px 8px rgba(255,255,255,0.85);
+  }
+  #stateButtons button.state-on {
+    background:#444; color:#fff;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3);
+  }
 
-#stateButtons button {
-  width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  border-radius: 12px;
-
-  /* ニューモーフィズム：ふんわりした陰影 */
-  background: #f0f0f0;
-  border: none;
-  box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
-              -4px -4px 8px rgba(255,255,255,0.85);
-
-  color: #333;
-  font-weight: 600;
-
-  cursor: pointer;
-  transition: all 0.15s ease;
-  -webkit-appearance: none;
-}
-
-/* 押した瞬間ちょい沈む */
-#stateButtons button:active {
-  transform: translateY(2px);
-  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.25),
-              inset -3px -3px 6px rgba(255,255,255,0.7);
-}
-
-/* 購入済みが ON のとき（押されているとき） */
-#stateButtons button.state-on {
-  background: #444;        /* ← 濃いグレーに */
-  color: white;            /* ← 白文字 */
-  border-color: #444;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.35), 
-              0 1px 4px rgba(0,0,0,0.3);
-  font-weight: 600;
-}
-
-
-
+  /* ▼ 座標ラベル */
   #coordDisplay {
     position: fixed;
     bottom: 12px;
     left: 12px;
-    z-index: 9999;
     background: rgba(0,0,0,0.8);
     color: #fff;
     padding: 8px 12px;
-    font-size: 18px;
     border-radius: 6px;
+    font-size: 18px;
+    z-index: 9999;
   }
+
 </style>
 </head>
 
+
 <body>
 
-<!-- 左：マップ -->
+<!-- ▼ 左：マップ -->
 <div id="mapWrapper">
-  <div id="mapInner">
-    <img src="map-day1.png" id="mapImage" alt="map">
 
-    <!-- ▼ブース -->
-    <div class="booth" data-code="L12" data-status="must"
-      style="left:53.8%; top:22.8%; width:0.6%; height:0.4%;"></div>
+  <!-- 1日目 -->
+  <div id="mapInner-day1" class="mapInner active">
+    <img src="map-day1.png">
 
-    <div class="booth" data-code="E30" data-status="maybe"
-      style="left:18.5%; top:43.6%; width:0.6%; height:0.4%;"></div>
+    <div class="booth" data-day="1" data-code="L12" data-status="must"
+         style="left:53.8%; top:22.8%; width:0.6%; height:0.4%;"></div>
 
-    <div class="booth" data-code="L23" data-status="reserved"
-      style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
+    <div class="booth" data-day="1" data-code="E30" data-status="maybe"
+         style="left:18.5%; top:43.6%; width:0.6%; height:0.4%;"></div>
 
+    <div class="booth" data-day="1" data-code="L23" data-status="reserved"
+         style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
+  </div>
+
+  <!-- 2日目 -->
+  <div id="mapInner-day2" class="mapInner">
+    <img src="map-day2.png">
+
+    <div class="booth" data-day="2" data-code="V6" data-status="must"
+         style="left:48.1%; top:60.9%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="2" data-code="E30" data-status="maybe"
+         style="left:18.5%; top:43.6%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="2" data-code="L23" data-status="reserved"
+         style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
   </div>
 
   <div id="coordDisplay">左右% / 上下%：-</div>
 </div>
 
-<!-- 右：詳細 -->
+
+<!-- ▼ 右：パネル -->
 <div id="panel">
 
-  <!-- ★ ここが新しく追加する検索ボックス -->
+  <!-- 日付タブ -->
+  <div id="dayTabs">
+    <button data-day="1" class="active">1日目</button>
+    <button data-day="2">2日目</button>
+  </div>
+
+  <!-- 検索 -->
   <div id="searchBox">
     <input id="searchInput" type="text" placeholder="ブース番号（例：L12）">
     <button id="btnSearch">検索</button>
   </div>
 
-  <!-- ★ 優先度フィルター -->
+  <!-- 優先度フィルター -->
   <div id="priorityFilter">
-    <label>
-      <input type="checkbox" id="chkMust" checked>
-      必須（赤）
-    </label>
-    <label>
-      <input type="checkbox" id="chkMaybe" checked>
-      検討（黄）
-    </label>
-    <label>
-      <input type="checkbox" id="chkReserved" checked>
-      予約済み（青）
-    </label>
+    <label><input type="checkbox" id="chkMust" checked>必須（赤）</label>
+    <label><input type="checkbox" id="chkMaybe" checked>検討（黄）</label>
+    <label><input type="checkbox" id="chkReserved" checked>予約済み（青）</label>
   </div>
-
 
   <h2>ブースをタップしてください</h2>
   <div id="detail"></div>
@@ -292,275 +218,152 @@
 
 
 <script>
-const boothData = {
-  "L12": {
-    circle:"ぺろまる工房",
-    game:"WicFluffy（ウィック・フラフィー）",
-    price:"3,000円",
-    reserve:"済",
-    pickup:"11:00〜12:00",
-    note:"予約名⇒オオタ",
-    image:"PIC_L12.jpg"
-  },
-  "E30": {
-    circle:"てねずっとgames",
-    game:"大きそうなかぶ",
-    price:"2,000円",
-    reserve:"未",
-    pickup:"",
-    note:"",
-    image:"PIC_E30.jpg"
-  },
-  "L23": {
-    circle:"茶茶屋",
-    game:"扇舞",
-    price:"4,000円",
-    reserve:"済",
-    pickup:"15:00迄",
-    note:"予約名⇒太田",
-    image:"PIC_L23.jpg"
-  }
+/* ========= ここから JS ========= */
+
+function getActiveMap() {
+  return document.querySelector('.mapInner.active');
+}
+
+const coordDisp  = document.getElementById("coordDisplay");
+const mapWrapper = document.getElementById("mapWrapper");
+
+/* ▼ 座標計算（アクティブな地図だけ処理） */
+document.addEventListener("click", (e) => {
+  const activeMap = getActiveMap();
+  if (!activeMap) return;
+  if (!activeMap.contains(e.target)) return;
+
+  const r = activeMap.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+
+  coordDisp.textContent =
+    `left:${(x/r.width*100).toFixed(1)}% / top:${(y/r.height*100).toFixed(1)}%`;
+});
+
+/* ▼ 以下、クリック・検索・フィルター・状態管理は全て同じコードでOK */
+
+const boothData={
+  L12:{circle:"ぺろまる工房",game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"予約名⇒オオタ",image:"PIC_L12.jpg"},
+  E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
+  L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"予約名⇒太田",image:"PIC_L23.jpg"},
+
+  /* ▼ ここから2日目のブース ▼ */
+  V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
+        pickup:"", note:"", image:"PIC_A01.jpg"},
+
+  B14:{circle:"オレオレ堂", game:"ハムスター帝国", price:"1,800円", reserve:"済",
+        pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
 };
 
-let currentBooth = null;
-const stateButtons = document.getElementById("stateButtons"); 
-stateButtons.style.display = "none";   
+
+let currentBooth=null;
+const stateButtons=document.getElementById("stateButtons");
 
 function showBooth(code){
-  currentBooth = code;
-  const data = boothData[code];
+  currentBooth=code;
+  const data=boothData[code];
   if(!data) return;
 
-  document.querySelector("#panel h2")
-      .textContent = `【${code}】${data.circle}`;
+  document.querySelector("#panel h2").textContent=`【${code}】${data.circle}`;
 
-  let html = `
+  let html=`
     <p><strong>ゲーム：</strong>${data.game}</p>
-    <p><strong>料金：</strong>${data.price || "-"}</p>
-    <p><strong>予約：</strong>${data.reserve || "-"}</p>
-    <p><strong>引取時間：</strong>${data.pickup || "-"}</p>
-    <p><strong>備考：</strong>${data.note || "-"}</p>
-  `;
+    <p><strong>料金：</strong>${data.price}</p>
+    <p><strong>予約：</strong>${data.reserve}</p>
+    <p><strong>引取時間：</strong>${data.pickup}</p>
+    <p><strong>備考：</strong>${data.note}</p>`;
+  if(data.image) html+=`<img src="${data.image}">`;
 
-  if(data.image){
-    html += `<img src="${data.image}">`;
-  }
-
-  document.getElementById("detail").innerHTML = html;
-
-  // ブースを選んだらボタンを表示して、見た目を更新
-  stateButtons.style.display = "flex";
+  document.getElementById("detail").innerHTML=html;
+  stateButtons.style.display="flex";
   refreshStateButtons();
 }
 
-/* 状態保存・復元 */
-function setState(code, state){
-  const el = document.querySelector(`.booth[data-code="${code}"]`);
-  if (!el) return;
-
-  if (state === "none") {
-    el.removeAttribute("data-state");
-    localStorage.removeItem("state_" + code);
-  } else {
-    el.dataset.state = state;
-    localStorage.setItem("state_" + code, state);
-  }
-
-  // ★ 購入済みにした瞬間、選択状態は外して「グレーだけ」にする
-  if (state === "bought") {
-    el.classList.remove("selected");
-  }
-
-  // ★ 今開いてるブースだったら、ボタンの見た目を更新
-  if (code === currentBooth) {
-    refreshStateButtons();
-  }
-}
-
-// ★ 現在のブース状態に合わせてボタンの見た目を更新
-function refreshStateButtons() {
-  const btnBought = document.getElementById("btnBought");
-  const btnClear  = document.getElementById("btnClear");
-
-  // いったんリセット
+function refreshStateButtons(){
   btnBought.classList.remove("state-on");
-
-  if (!currentBooth) return;
-
-  const el = document.querySelector(`.booth[data-code="${currentBooth}"]`);
-  if (!el) return;
-
-  const state = el.dataset.state || "none";
-
-  if (state === "bought") {
-    // ★ このブースが購入済みなら、ボタンを「押されている」見た目に
-    btnBought.classList.add("state-on");
-  }
+  if(!currentBooth) return;
+  const el=document.querySelector(`.booth[data-code="${currentBooth}"]`);
+  if(!el) return;
+  if(el.dataset.state==="bought") btnBought.classList.add("state-on");
 }
 
-// ★ 選択解除（余白クリック用）
-function clearSelection() {
-  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
-
-  currentBooth = null;
-  document.querySelector("#panel h2").textContent = "ブースをタップしてください";
-  document.getElementById("detail").innerHTML = "";
-
-  stateButtons.style.display = "none"; 
+function clearSelection(){
+  document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
+  currentBooth=null;
+  document.querySelector("#panel h2").textContent="ブースをタップしてください";
+  document.getElementById("detail").innerHTML="";
+  stateButtons.style.display="none";
   refreshStateButtons();
 }
 
-/* ★ 優先度フィルターを適用する関数 */
-function applyPriorityFilter() {
-  const showMust     = chkMust.checked;
-  const showMaybe    = chkMaybe.checked;
-  const showReserved = chkReserved.checked;
+/* ▼ 余白クリックで選択解除 */
+mapWrapper.addEventListener("click",(e)=>{
+  if(e.target.classList.contains("booth")) return;
+  clearSelection();
+});
 
-  let selectedHidden = false;
-
-  document.querySelectorAll(".booth").forEach(el => {
-    const status = el.dataset.status;  // "must" / "maybe" / "reserved"
-    let visible = true;
-
-    if (status === "must" && !showMust)       visible = false;
-    if (status === "maybe" && !showMaybe)     visible = false;
-    if (status === "reserved" && !showReserved) visible = false;
-
-    if (visible) {
-      el.style.display = "";
-    } else {
-      if (el.classList.contains("selected")) {
-        selectedHidden = true;
-      }
-      el.style.display = "none";
-    }
-  });
-
-  // 選択しているブースが見えなくなったら選択解除
-  if (selectedHidden) {
-    clearSelection();
-  }
-}
-
-
-/* ブースのクリックイベント */
-document.querySelectorAll(".booth").forEach(el => {
-  const saved = localStorage.getItem("state_" + el.dataset.code);
-  if (saved) el.dataset.state = saved;
-
-  el.addEventListener("click", () => {
-    document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
+/* ▼ ブースクリック */
+document.querySelectorAll(".booth").forEach(el=>{
+  const saved=localStorage.getItem("state_"+el.dataset.code);
+  if(saved) el.dataset.state=saved;
+  el.addEventListener("click",()=>{
+    document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
     el.classList.add("selected");
     showBooth(el.dataset.code);
   });
 });
 
-/* 購入済み / 元に戻す ボタン */
-document.getElementById("btnBought").onclick = () => {
-  if (currentBooth) setState(currentBooth, "bought");
-};
-document.getElementById("btnClear").onclick = () => {
-  if (currentBooth) setState(currentBooth, "none");
-};
+/* ▼ 購入済み/解除 */
+btnBought.onclick=()=>{ if(currentBooth) setState(currentBooth,"bought"); };
+btnClear.onclick =()=>{ if(currentBooth) setState(currentBooth,"none"); };
 
-/* ★ ここ重要：mapInner / coordDisp をちゃんと取得する */
-const mapInner   = document.getElementById("mapInner");
-const coordDisp  = document.getElementById("coordDisplay");
-const mapWrapper = document.getElementById("mapWrapper");
+function setState(code,state){
+  const el=document.querySelector(`.booth[data-code="${code}"]`);
+  if(!el) return;
+  if(state==="none"){ el.removeAttribute("data-state"); localStorage.removeItem("state_"+code);}
+  else{ el.dataset.state=state; localStorage.setItem("state_"+code,state);}
+  if(state==="bought") el.classList.remove("selected");
+  refreshStateButtons();
+}
 
-/* ★ 検索ボックスと検索ボタン */
-const searchInput  = document.getElementById("searchInput");
-const searchButton = document.getElementById("btnSearch");
+/* ▼ 検索 */
+const searchInput=document.getElementById("searchInput");
+document.getElementById("btnSearch").onclick=()=>goToBooth(searchInput.value);
 
-/* ★ 優先度フィルター用のチェックボックス */
-const chkMust     = document.getElementById("chkMust");
-const chkMaybe    = document.getElementById("chkMaybe");
-const chkReserved = document.getElementById("chkReserved");
+searchInput.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter") goToBooth(searchInput.value);
+});
 
+function goToBooth(raw){
+  if(!raw) return;
+  const code=raw.trim().toUpperCase();
+  const boothEl=document.querySelector(`.booth[data-code="${code}"]`);
+  if(!boothEl){ alert(`ブース「${code}」は見つかりませんでした`); return;}
 
-/* ★ 指定したブースコードを選択＆スクロールする関数 */
-function goToBooth(codeRaw) {
-  if (!codeRaw) return;
-
-  // 前後の空白カット＆大文字化（l12 → L12 でもOKにする）
-  const code = codeRaw.trim().toUpperCase();
-
-  // data-code="L12" みたいな要素を探す
-  const boothEl = document.querySelector(`.booth[data-code="${code}"]`);
-  if (!boothEl) {
-    alert(`ブース「${code}」は見つかりませんでした`);
-    return;
-  }
-
-  // いったん全ブースの選択解除
-  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
-
-  // このブースを選択
+  document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
   boothEl.classList.add("selected");
   showBooth(code);
 
-  // ★ 検索したブースが見えるよう、その優先度を自動でONにする
-  const status = boothEl.dataset.status;  // "must" / "maybe" / "reserved"
-  if (status === "must")   chkMust.checked = true;
-  if (status === "maybe")  chkMaybe.checked = true;
-  if (status === "reserved") chkReserved.checked = true;
-  applyPriorityFilter();
-
-
-  // ★ マップをそのブースの位置までスクロール
-  const wrapperRect = mapWrapper.getBoundingClientRect();
-  const boothRect   = boothEl.getBoundingClientRect();
-
-  const currentLeft = mapWrapper.scrollLeft;
-  const currentTop  = mapWrapper.scrollTop;
-
-  const offsetLeft = boothRect.left - wrapperRect.left + currentLeft;
-  const offsetTop  = boothRect.top  - wrapperRect.top  + currentTop;
-
-  mapWrapper.scrollTo({
-    left: Math.max(offsetLeft - wrapperRect.width  / 2, 0),
-    top:  Math.max(offsetTop  - wrapperRect.height / 2, 0),
-    behavior: "smooth"
-  });
+  boothEl.scrollIntoView({behavior:"smooth", block:"center", inline:"center"});
 }
 
-/* ★ 検索ボタンを押したとき */
-searchButton.addEventListener("click", () => {
-  goToBooth(searchInput.value);
+/* ▼ 日付タブ切替 */
+document.querySelectorAll("#dayTabs button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#dayTabs button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const day=btn.dataset.day;
+
+    document.querySelectorAll(".mapInner").forEach(m=>m.classList.remove("active"));
+    document.getElementById("mapInner-day"+day).classList.add("active");
+
+    clearSelection();  // 切り替えたら選択解除
+  });
 });
 
-/* ★ 入力欄で Enter 押したとき */
-searchInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    goToBooth(searchInput.value);
-  }
-});
-
-/* ★ 優先度フィルター：チェックが変わったら適用 */
-[chkMust, chkMaybe, chkReserved].forEach(chk => {
-  chk.addEventListener("change", applyPriorityFilter);
-});
-
-// ★ 初期表示時にもフィルターを一度適用
-applyPriorityFilter();
-
-
-
-/* mapInner クリック時に座標更新 */
-mapInner.addEventListener("click", (e) => {
-  const r = mapInner.getBoundingClientRect();
-  const x = e.clientX - r.left;
-  const y = e.clientY - r.top;
-
-  coordDisp.textContent =
-    `left:${(x / r.width * 100).toFixed(1)}% / top:${(y / r.height * 100).toFixed(1)}%`;
-});
-
-/* mapWrapper クリック時：ブース以外なら選択解除 */
-mapWrapper.addEventListener("click", (e) => {
-  if (e.target.classList.contains("booth")) return;
-  clearSelection();
-});
+/* ========= JS 終了 ========= */
 </script>
 
 </body>
