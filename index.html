@@ -485,6 +485,14 @@ const boothData = {
       pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
 };
 
+// ▼ 予約表示を「済 → 予約済」「未 → 予約未」に統一
+function formatReserveStatus(status) {
+  if (!status) return "-";
+  if (status === "済") return "予約済";
+  if (status === "未") return "予約未";
+  return status; // その他はそのまま
+}
+
 let currentBooth   = null;
 let highlightLabel = null;   // ★ ラベルDOMを覚えておく
 
@@ -524,7 +532,7 @@ function showBooth(code){
       <div class="game-block">
         <div class="game-block-header">
           <div class="game-title-text">${g.game}</div>
-          <span class="reserve-pill ${reserveClass}">${g.reserve || "-"}</span>
+          <span class="reserve-pill ${reserveClass}">${formatReserveStatus(g.reserve)}</span>
         </div>
         <p><strong>料金：</strong>${g.price}</p>
         ${g.image ? `<img src="${g.image}">` : ""}
@@ -556,7 +564,7 @@ function showBooth(code){
     <div class="game-block">
       <div class="game-block-header">
         <div class="game-title-text">${data.game}</div>
-        <span class="reserve-pill ${reserveClass}">${data.reserve || "-"}</span>
+        <span class="reserve-pill ${reserveClass}">${formatReserveStatus(data.reserve)}</span>
       </div>
       <p><strong>料金：</strong>${data.price}</p>
       ${data.image ? `<img src="${data.image}">` : ""}
