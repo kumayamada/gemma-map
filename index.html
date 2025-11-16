@@ -68,16 +68,15 @@
     overflow: auto;
   }
 
-/* ▼ パネル内の画像サイズ調整（追加） */
-#panel img {
-  max-width: 100%;
-  height: auto;
-  max-height: 300px;   /* ← 高さの上限。好みで調整 */
-  object-fit: contain;
-  margin-top: 8px;
-  border-radius: 4px;
-}
-
+  /* ▼ パネル内の画像サイズ調整 */
+  #panel img {
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    margin-top: 8px;
+    border-radius: 4px;
+  }
 
   /* ▼ 日付タブ */
   #dayTabs { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -92,10 +91,8 @@
                 -4px -4px 8px rgba(255,255,255,0.85);
     cursor: pointer;
     font-weight: 600;
-
-   color: #333;
-  -webkit-appearance: none;
-
+    color: #333;
+    -webkit-appearance: none;
   }
   #dayTabs button.active {
     background: #444;
@@ -129,8 +126,8 @@
     background:#f0f0f0; cursor:pointer; font-size:15px; font-weight:600;
     box-shadow:4px 4px 8px rgba(0,0,0,0.15),
                -4px -4px 8px rgba(255,255,255,0.85);
-   color: #333;
-  -webkit-appearance: none;
+    color: #333;
+    -webkit-appearance: none;
   }
   #stateButtons button.state-on {
     background:#444; color:#fff;
@@ -148,6 +145,39 @@
     border-radius: 6px;
     font-size: 18px;
     z-index: 9999;
+  }
+
+  /* ▼ 選択中ブース用のラベル＆点滅アニメーション */
+  .booth-label {
+    position: absolute;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    transform: translate(-50%, -120%); /* ブースの少し上に出す */
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  .booth-flash {
+    animation: boothFlash 0.7s ease-out;
+  }
+
+  @keyframes boothFlash {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255,255,255,0.9);
+    }
+    60% {
+      transform: scale(1.4);
+      box-shadow: 0 0 0 12px rgba(255,255,255,0.3);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    }
   }
 
 </style>
@@ -230,8 +260,8 @@ function getActiveMap() {
   return document.querySelector('.mapInner.active');
 }
 
-const coordDisp   = document.getElementById("coordDisplay");
-const mapWrapper  = document.getElementById("mapWrapper");
+const coordDisp      = document.getElementById("coordDisplay");
+const mapWrapper     = document.getElementById("mapWrapper");
 const priorityFilter = document.getElementById("priorityFilter");
 const stateButtons   = document.getElementById("stateButtons");
 const btnBought      = document.getElementById("btnBought");
@@ -264,7 +294,8 @@ const boothData = {
       pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
 };
 
-let currentBooth = null;
+let currentBooth   = null;
+let highlightLabel = null;   // ★ ラベルDOMを覚えておく
 
 /* ▼ ブース詳細表示 */
 function showBooth(code){
@@ -286,10 +317,13 @@ function showBooth(code){
 
   // ボタン表示 & 購入済みボタンの状態更新
   stateButtons.style.display = "flex";
-  // ★ 詳細表示中は優先度フィルターを隠す
+  // 詳細表示中は優先度フィルターを隠す
   priorityFilter.style.display = "none";
 
   refreshStateButtons();
+
+  // ★ マップ側のハイライト更新（ラベル＋ピカッ）
+  updateBoothHighlight(code);
 }
 
 /* ▼ 購入済みボタンの見た目更新 */
@@ -305,16 +339,69 @@ function refreshStateButtons(){
   }
 }
 
+/* ▼ 選択中ブースのラベル表示＆一瞬点滅させる */
+function updateBoothHighlight(code) {
+  const activeMap = getActiveMap();
+  if (!activeMap) return;
+
+  const boothEl = activeMap.querySelector(`.booth[data-code="${code}"]`);
+  if (!boothEl) return;
+
+  // 既存ラベルを消す
+  if (highlightLabel) {
+    highlightLabel.remove();
+    highlightLabel = null;
+  }
+
+  // ラベルを作成
+  const label = document.createElement("div");
+  label.className = "booth-label";
+  label.textContent = code;
+  activeMap.appendChild(label);
+
+  // 位置計算：ブースの真ん中あたりの上に配置
+  const mapRect   = activeMap.getBoundingClientRect();
+  const boothRect = boothEl.getBoundingClientRect();
+
+  const centerX   = boothRect.left + boothRect.width / 2;
+  const topY      = boothRect.top;
+
+  const leftPercent = ((centerX - mapRect.left) / mapRect.width) * 100;
+  const topPercent  = ((topY    - mapRect.top)  / mapRect.height) * 100;
+
+  label.style.left = leftPercent + "%";
+  label.style.top  = topPercent  + "%";
+
+  highlightLabel = label;
+
+  // 一瞬だけ点滅アニメを付ける
+  boothEl.classList.remove("booth-flash"); // 付け直し用
+  void boothEl.offsetWidth;                // reflow してリセット
+  boothEl.classList.add("booth-flash");
+
+  // しばらくしたらクラスを外しておく
+  setTimeout(() => {
+    boothEl.classList.remove("booth-flash");
+  }, 800);
+}
+
 /* ▼ 選択解除（詳細を閉じる） */
 function clearSelection(){
   document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
 
   currentBooth = null;
+
+  // ラベルがあれば消す
+  if (highlightLabel) {
+    highlightLabel.remove();
+    highlightLabel = null;
+  }
+
   document.querySelector("#panel h2").textContent = "ブースをタップしてください";
   document.getElementById("detail").innerHTML = "";
 
   stateButtons.style.display = "none";
-  // ★ 何も選択していないときだけ優先度フィルター表示
+  // 何も選択していないときだけ優先度フィルター表示
   priorityFilter.style.display = "flex";
 
   refreshStateButtons();
