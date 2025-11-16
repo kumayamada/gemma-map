@@ -125,6 +125,12 @@ body {
     flex:1; padding:6px 8px; border-radius:8px;
     border:1px solid #ccc; font-size:14px;
   }
+/* ▼ 検索欄のプレースホルダーを少し小さく */
+#searchInput::placeholder {
+  font-size: 13px;
+}
+
+
   #btnSearch {
     padding:6px 10px; border-radius:8px;
     background:#444; color:#fff; border:1px solid #444;
@@ -336,6 +342,14 @@ body {
   color: #b91c1c;          /* 赤めの文字色 */
   margin: -4px 0 8px 2px;  /* 検索ボックスに少し寄せる */
 }
+
+/* ▼ スマホでプレースホルダー文字を小さくして収める */
+@media (max-width: 768px) {
+  #searchInput::placeholder {
+    font-size: 12px;
+  }
+}
+
 
 
 </style>
