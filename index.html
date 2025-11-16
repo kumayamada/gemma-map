@@ -272,32 +272,6 @@
   }
 }
 
-/* ▼ スマホ表示のときは、上下レイアウトに切り替え */
-@media (max-width: 768px) {
-  body {
-    flex-direction: column;   /* 横並び → 縦並び */
-    height: 100vh;
-  }
-
-  #mapWrapper {
-    flex: 0 0 55vh;           /* 画面の上をマップにだいたい55%くらい使う */
-    overflow: auto;
-  }
-
-  #panel {
-    flex: 0 0 45vh;           /* 下の45%を詳細に */
-    border-left: none;        /* 左の線はいらないので消す */
-    border-top: 1px solid #ccc; /* 上に区切り線をつける */
-    overflow: auto;
-  }
-
-  /* 座標表示が邪魔ならちょっと小さく */
-  #coordDisplay {
-    font-size: 14px;
-    bottom: 8px;
-    left: 8px;
-  }
-}
 
 /* ▼ ブースの基本情報をまとめるサマリー枠 */
 .booth-summary {
