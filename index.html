@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ゲムマMAPビューア</title>
 
 <style>
@@ -52,9 +53,9 @@
   .booth[data-status="maybe"]    { background: rgba(255,210,  0, 0.5); border-color: #e6a700; }
   .booth[data-status="reserved"] { background: rgba(  0,140,255,0.5); border-color: #0090dd; }
 
-  .booth.selected[data-status="must"]     { background: rgba(255,  0,  0,0.75); }
-  .booth.selected[data-status="maybe"]    { background: rgba(255,180,  0,0.75); }
-  .booth.selected[data-status="reserved"] { background: rgba(  0,120,255,0.75); }
+  .booth.selected[data-status="must"]     { background: rgba(255,  0,  0,0.85); }
+  .booth.selected[data-status="maybe"]    { background: rgba(255,180,  0,0.55); }
+  .booth.selected[data-status="reserved"] { background: rgba(  0,120,255,0.85); }
 
   /* 購入済み */
   .booth[data-state="bought"] { background: rgba(170,170,170,0.9); border-color:#777; }
@@ -296,13 +297,13 @@ body {
   .booth::before {
     content: "";
     position: absolute;
-    top: -24px;
-    left: -24px;
-    right: -24px;
-    bottom: -24px;
+    top: -21px;
+    left: -21px;
+    right: -21px;
+    bottom: -21px;
     /* 透明なので見た目は変わらないけど、タップ判定だけ広がる */
   }
-}
+
 
 
 /* ▼ ブースの基本情報をまとめるサマリー枠 */
@@ -384,8 +385,21 @@ body {
     <div class="booth" data-day="1" data-code="L23" data-status="reserved"
          style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
 
- <div class="booth" data-day="1" data-code="E26" data-status="reserved"
+    <div class="booth" data-day="1" data-code="E26" data-status="reserved"
          style="left:15.3%; top:43.6%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="H29" data-status="reserved"
+         style="left:19.3%; top:57.9%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="D03" data-status="reserved"
+         style="left:17.7%; top:37.2%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="G48" data-status="must"
+         style="left:34.5%; top:53.7%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="M34" data-status="must"
+         style="left:53.8%; top:28.0%; width:0.6%; height:0.4%;"></div>
+
   </div>
 
   <!-- 2日目 -->
@@ -470,13 +484,13 @@ document.addEventListener("click", (e) => {
 
 /* ▼ ブース情報 */
 const boothData = {
-  L12:{circle:"ぺろまる工房",x:"https://x.com/peropapa1102", game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg",url:"https://gamemarket.jp/game/185055"},
+  L12:{circle:"ぺろまる工房",circleUrl:"https://x.com/peropapa1102", game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg",url:"https://gamemarket.jp/game/185055"},
   E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
   L23:{
   circle:"茶々屋",
-  x:"https://x.com/chachayaGame",
+  circleUrl:"https://x.com/chachayaGame",
   game:"扇舞",
-  price:"4,000円",
+  price:"3,000円",
   reserve:"済",
   pickup:"15:00迄",
   note:"太田",
@@ -486,7 +500,7 @@ const boothData = {
 
 
   E26:{
-    circle: "ryuseigames",x:"https://x.com/R_Game_Official",
+    circle: "ryuseigames",circleUrl:"https://x.com/R_Game_Official",
     pickup: "11:00〜12:00",
     note: "太田（土曜日）",
     game: [
@@ -512,6 +526,55 @@ const boothData = {
     ]
   },
 
+  H29:{
+  circle:"Liner Note",
+  circleUrl:"https://x.com/linernote000",
+  game:"ワイルドハントフェス",
+  price:"3,500円",
+  reserve:"済",
+  pickup:"15:00迄",
+  note:"太田,A028",
+  image:"PIC_H29.jpg",
+  url:"https://gamemarket.jp/game/181760"
+},
+
+  D03:{
+  circle:"あんみつスタジオ",
+  circleUrl:"https://x.com/anmitsu_studio",
+  game:"おじぞうストリート",
+  price:"2,500円",
+  reserve:"済",
+  pickup:"時間制限なし",
+  note:"オオタ",
+  image:"PIC_D03.jpg",
+  url:"https://gamemarket.jp/game/181900"
+},
+
+  G48:{
+  circle:"OKAZU brand",
+  circleUrl:"https://x.com/okazu_900jaku",
+  game:"さらサーチ",
+  price:"1,700円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_G48.jpg",
+  url:"https://gamemarket.jp/game/186091"
+},
+
+  M34:{
+  circle:"知転脳",
+  circleUrl:"https://x.com/shi_ten_nou",
+  game:"禁足地",
+  price:"2,200円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_M34.jpg",
+  url:"https://suppe.sugorokuya.jp/items/220628"
+},
+
+
   /* ▼ ここから2日目のブース ▼ */
   V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
       pickup:"", note:"", image:"PIC_A01.jpg"},
@@ -530,122 +593,99 @@ function formatReserveStatus(status) {
 let currentBooth   = null;
 let highlightLabel = null;   // ★ ラベルDOMを覚えておく
 
-/* ▼ ブース詳細表示 */
+/* ▼ ブース詳細表示（画像リンク＋サークルXリンク対応版） */
 function showBooth(code){
   currentBooth = code;
   const data = boothData[code];
   if (!data) return;
 
-   // Xリンク付きのサークル名を作る
-  const circleTitle = data.x
-    ? `<a href="${data.x}" target="_blank" rel="noopener noreferrer">${data.circle}</a>`
+  // サークル名 → X へのリンク（あれば）
+  const circleHtml = data.circleUrl
+    ? `<a href="${data.circleUrl}" target="_blank" rel="noopener noreferrer">${data.circle}</a>`
     : data.circle;
 
-  // textContent → innerHTML に変更
-  document.querySelector("#panel h2").innerHTML = `【${code}】${circleTitle}`;
-
+  // h2 は HTML を入れたいので innerHTML を使う
+  document.querySelector("#panel h2").innerHTML = `【${code}】${circleHtml}`;
 
   let html = "";
 
-  // ▼ ゲームが「配列」かどうかで場合分け
- if (Array.isArray(data.game)) {
-  // ▼ 上部サマリー
-  html += `
-    <div class="booth-summary">
-      <div class="booth-summary-row">
-        <span class="booth-summary-label">引取時間</span>
-        <span class="booth-summary-value">${data.pickup || "-"}</span>
+  // ▼ 上部サマリー（引取時間・予約名）
+  function buildSummary() {
+    return `
+      <div class="booth-summary">
+        <div class="booth-summary-row">
+          <span class="booth-summary-label">引取時間</span>
+          <span class="booth-summary-value">${data.pickup || "-"}</span>
+        </div>
+        <div class="booth-summary-row">
+          <span class="booth-summary-label">予約名</span>
+          <span class="booth-summary-value">${data.note || "-"}</span>
+        </div>
       </div>
-      <div class="booth-summary-row">
-        <span class="booth-summary-label">予約名</span>
-        <span class="booth-summary-value">${data.note || "-"}</span>
-      </div>
-    </div>
-    <h3 class="section-title">🎮購入予定のゲーム</h3>
-  `;
+      <h3 class="section-title">🎮購入予定のゲーム</h3>
+    `;
+  }
 
-  data.game.forEach(g => {
-  const reserveClass =
-    g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
+  // ▼ 1枚分のゲームカードを作る共通関数
+  function buildGameBlock(g){
+    const reserveClass =
+      g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
 
-  html += `
-    <div class="game-block">
-      <div class="game-block-header">
-        <div class="game-title-text">${g.game}</div>
-        <span class="reserve-pill ${reserveClass}">${formatReserveStatus(g.reserve)}</span>
-      </div>
-      <p><strong>料金：</strong>${g.price}</p>
-      ${
-        g.image
-          ? (g.url
-              ? `<a href="${g.url}" target="_blank" rel="noopener noreferrer">
-                   <img src="${g.image}">
-                 </a>`
-              : `<img src="${g.image}">`
-            )
-          : ""
+    let imgHtml = "";
+    if (g.image) {
+      if (g.url) {
+        imgHtml =
+          `<a href="${g.url}" target="_blank" rel="noopener noreferrer">
+             <img src="${g.image}">
+           </a>`;
+      } else {
+        imgHtml = `<img src="${g.image}">`;
       }
-    </div>
-  `;
-});
-
-
-
-} else {
-  // ▼ 単品作品も同じデザインで
-  html += `
-    <div class="booth-summary">
-      <div class="booth-summary-row">
-        <span class="booth-summary-label">引取時間</span>
-        <span class="booth-summary-value">${data.pickup || "-"}</span>
-      </div>
-      <div class="booth-summary-row">
-        <span class="booth-summary-label">予約名</span>
-        <span class="booth-summary-value">${data.note || "-"}</span>
-      </div>
-    </div>
-    <h3 class="section-title">🎮購入予定のゲーム</h3>
-  `;
-
-  const reserveClass =
-  data.reserve === "済" || data.reserve === "予約済み" ? "reserved" : "unreserved";
-
-html += `
-  <div class="game-block">
-    <div class="game-block-header">
-      <div class="game-title-text">${data.game}</div>
-      <span class="reserve-pill ${reserveClass}">${formatReserveStatus(data.reserve)}</span>
-    </div>
-    <p><strong>料金：</strong>${data.price}</p>
-    ${
-      data.image
-        ? (data.url
-            ? `<a href="${data.url}" target="_blank" rel="noopener noreferrer">
-                 <img src="${data.image}">
-               </a>`
-            : `<img src="${data.image}">`
-          )
-        : ""
     }
-  </div>
-`;
 
+    return `
+      <div class="game-block">
+        <div class="game-block-header">
+          <div class="game-title-text">${g.game}</div>
+          <span class="reserve-pill ${reserveClass}">
+            ${formatReserveStatus(g.reserve)}
+          </span>
+        </div>
+        <p><strong>料金：</strong>${g.price}</p>
+        ${imgHtml}
+      </div>
+    `;
+  }
 
+  // ▼ ゲームが配列かどうかで分岐
+  if (Array.isArray(data.game)) {
+    html += buildSummary();
+    data.game.forEach(g => {
+      html += buildGameBlock(g);
+    });
+  } else {
+    html += buildSummary();
+    html += buildGameBlock({
+      game:   data.game,
+      price:  data.price,
+      reserve:data.reserve,
+      image:  data.image,
+      url:    data.url
+    });
+  }
 
-
-
+  // ここまでで html が完成するので一気に流し込む
   document.getElementById("detail").innerHTML = html;
+
   // ボタン表示 & 購入済みボタンの状態更新
   stateButtons.style.display = "flex";
   // 詳細表示中は優先度フィルターを隠す
   priorityFilter.style.display = "none";
 
   refreshStateButtons();
-
-  // ★ マップ側のハイライト更新（ラベル＋ピカッ）
   updateBoothHighlight(code);
 }
-}
+
 
 /* ▼ 購入済みボタンの見た目更新 */
 function refreshStateButtons(){
@@ -918,4 +958,3 @@ applyPriorityFilter();
 
 </body>
 </html>
-
