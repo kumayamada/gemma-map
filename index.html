@@ -92,6 +92,10 @@
                 -4px -4px 8px rgba(255,255,255,0.85);
     cursor: pointer;
     font-weight: 600;
+
+   color: #333;
+  -webkit-appearance: none;
+
   }
   #dayTabs button.active {
     background: #444;
@@ -125,6 +129,8 @@
     background:#f0f0f0; cursor:pointer; font-size:15px; font-weight:600;
     box-shadow:4px 4px 8px rgba(0,0,0,0.15),
                -4px -4px 8px rgba(255,255,255,0.85);
+   color: #333;
+  -webkit-appearance: none;
   }
   #stateButtons button.state-on {
     background:#444; color:#fff;
@@ -224,8 +230,12 @@ function getActiveMap() {
   return document.querySelector('.mapInner.active');
 }
 
-const coordDisp  = document.getElementById("coordDisplay");
-const mapWrapper = document.getElementById("mapWrapper");
+const coordDisp   = document.getElementById("coordDisplay");
+const mapWrapper  = document.getElementById("mapWrapper");
+const priorityFilter = document.getElementById("priorityFilter");
+const stateButtons   = document.getElementById("stateButtons");
+const btnBought      = document.getElementById("btnBought");
+const btnClear       = document.getElementById("btnClear");
 
 /* ▼ 座標計算（アクティブな地図だけ処理） */
 document.addEventListener("click", (e) => {
@@ -238,126 +248,150 @@ document.addEventListener("click", (e) => {
   const y = e.clientY - r.top;
 
   coordDisp.textContent =
-    `left:${(x/r.width*100).toFixed(1)}% / top:${(y/r.height*100).toFixed(1)}%`;
+    `left:${(x / r.width * 100).toFixed(1)}% / top:${(y / r.height * 100).toFixed(1)}%`;
 });
 
-/* ▼ 以下、クリック・検索・フィルター・状態管理は全て同じコードでOK */
-
-const boothData={
+/* ▼ ブース情報 */
+const boothData = {
   L12:{circle:"ぺろまる工房",game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"予約名⇒オオタ",image:"PIC_L12.jpg"},
   E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
   L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"予約名⇒太田",image:"PIC_L23.jpg"},
 
   /* ▼ ここから2日目のブース ▼ */
   V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
-        pickup:"", note:"", image:"PIC_A01.jpg"},
-
+      pickup:"", note:"", image:"PIC_A01.jpg"},
   B14:{circle:"オレオレ堂", game:"ハムスター帝国", price:"1,800円", reserve:"済",
-        pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
+      pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
 };
 
+let currentBooth = null;
 
-let currentBooth=null;
-const stateButtons=document.getElementById("stateButtons");
-
+/* ▼ ブース詳細表示 */
 function showBooth(code){
-  currentBooth=code;
-  const data=boothData[code];
-  if(!data) return;
+  currentBooth = code;
+  const data = boothData[code];
+  if (!data) return;
 
-  document.querySelector("#panel h2").textContent=`【${code}】${data.circle}`;
+  document.querySelector("#panel h2").textContent = `【${code}】${data.circle}`;
 
-  let html=`
+  let html = `
     <p><strong>ゲーム：</strong>${data.game}</p>
     <p><strong>料金：</strong>${data.price}</p>
     <p><strong>予約：</strong>${data.reserve}</p>
     <p><strong>引取時間：</strong>${data.pickup}</p>
     <p><strong>備考：</strong>${data.note}</p>`;
-  if(data.image) html+=`<img src="${data.image}">`;
+  if (data.image) html += `<img src="${data.image}">`;
 
-  document.getElementById("detail").innerHTML=html;
-  stateButtons.style.display="flex";
+  document.getElementById("detail").innerHTML = html;
+
+  // ボタン表示 & 購入済みボタンの状態更新
+  stateButtons.style.display = "flex";
+  // ★ 詳細表示中は優先度フィルターを隠す
+  priorityFilter.style.display = "none";
+
   refreshStateButtons();
 }
 
+/* ▼ 購入済みボタンの見た目更新 */
 function refreshStateButtons(){
   btnBought.classList.remove("state-on");
-  if(!currentBooth) return;
-  const el=document.querySelector(`.booth[data-code="${currentBooth}"]`);
-  if(!el) return;
-  if(el.dataset.state==="bought") btnBought.classList.add("state-on");
+  if (!currentBooth) return;
+
+  const el = document.querySelector(`.booth[data-code="${currentBooth}"]`);
+  if (!el) return;
+
+  if (el.dataset.state === "bought") {
+    btnBought.classList.add("state-on");
+  }
 }
 
+/* ▼ 選択解除（詳細を閉じる） */
 function clearSelection(){
-  document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
-  currentBooth=null;
-  document.querySelector("#panel h2").textContent="ブースをタップしてください";
-  document.getElementById("detail").innerHTML="";
-  stateButtons.style.display="none";
+  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
+
+  currentBooth = null;
+  document.querySelector("#panel h2").textContent = "ブースをタップしてください";
+  document.getElementById("detail").innerHTML = "";
+
+  stateButtons.style.display = "none";
+  // ★ 何も選択していないときだけ優先度フィルター表示
+  priorityFilter.style.display = "flex";
+
   refreshStateButtons();
 }
 
 /* ▼ 余白クリックで選択解除 */
-mapWrapper.addEventListener("click",(e)=>{
-  if(e.target.classList.contains("booth")) return;
+mapWrapper.addEventListener("click", (e) => {
+  if (e.target.classList.contains("booth")) return;
   clearSelection();
 });
 
 /* ▼ ブースクリック */
-document.querySelectorAll(".booth").forEach(el=>{
-  const saved=localStorage.getItem("state_"+el.dataset.code);
-  if(saved) el.dataset.state=saved;
-  el.addEventListener("click",()=>{
-    document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
+document.querySelectorAll(".booth").forEach(el => {
+  const saved = localStorage.getItem("state_" + el.dataset.code);
+  if (saved) el.dataset.state = saved;
+
+  el.addEventListener("click", () => {
+    document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
     el.classList.add("selected");
     showBooth(el.dataset.code);
   });
 });
 
 /* ▼ 購入済み/解除 */
-btnBought.onclick=()=>{ if(currentBooth) setState(currentBooth,"bought"); };
-btnClear.onclick =()=>{ if(currentBooth) setState(currentBooth,"none"); };
+btnBought.onclick = () => { if (currentBooth) setState(currentBooth, "bought"); };
+btnClear.onclick  = () => { if (currentBooth) setState(currentBooth, "none"); };
 
-function setState(code,state){
-  const el=document.querySelector(`.booth[data-code="${code}"]`);
-  if(!el) return;
-  if(state==="none"){ el.removeAttribute("data-state"); localStorage.removeItem("state_"+code);}
-  else{ el.dataset.state=state; localStorage.setItem("state_"+code,state);}
-  if(state==="bought") el.classList.remove("selected");
+function setState(code, state){
+  const el = document.querySelector(`.booth[data-code="${code}"]`);
+  if (!el) return;
+
+  if (state === "none") {
+    el.removeAttribute("data-state");
+    localStorage.removeItem("state_" + code);
+  } else {
+    el.dataset.state = state;
+    localStorage.setItem("state_" + code, state);
+  }
+  if (state === "bought") el.classList.remove("selected");
+
   refreshStateButtons();
 }
 
 /* ▼ 検索 */
-const searchInput=document.getElementById("searchInput");
-document.getElementById("btnSearch").onclick=()=>goToBooth(searchInput.value);
+const searchInput = document.getElementById("searchInput");
+document.getElementById("btnSearch").onclick = () => goToBooth(searchInput.value);
 
-searchInput.addEventListener("keydown",(e)=>{
-  if(e.key==="Enter") goToBooth(searchInput.value);
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") goToBooth(searchInput.value);
 });
 
 function goToBooth(raw){
-  if(!raw) return;
-  const code=raw.trim().toUpperCase();
-  const boothEl=document.querySelector(`.booth[data-code="${code}"]`);
-  if(!boothEl){ alert(`ブース「${code}」は見つかりませんでした`); return;}
+  if (!raw) return;
+  const code = raw.trim().toUpperCase();
+  const boothEl = document.querySelector(`.booth[data-code="${code}"]`);
+  if (!boothEl) {
+    alert(`ブース「${code}」は見つかりませんでした`);
+    return;
+  }
 
-  document.querySelectorAll(".booth").forEach(b=>b.classList.remove("selected"));
+  document.querySelectorAll(".booth").forEach(b => b.classList.remove("selected"));
   boothEl.classList.add("selected");
   showBooth(code);
 
-  boothEl.scrollIntoView({behavior:"smooth", block:"center", inline:"center"});
+  boothEl.scrollIntoView({ behavior:"smooth", block:"center", inline:"center" });
 }
 
 /* ▼ 日付タブ切替 */
-document.querySelectorAll("#dayTabs button").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    document.querySelectorAll("#dayTabs button").forEach(b=>b.classList.remove("active"));
+document.querySelectorAll("#dayTabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#dayTabs button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 
-    const day=btn.dataset.day;
+    const day = btn.dataset.day;
 
-    document.querySelectorAll(".mapInner").forEach(m=>m.classList.remove("active"));
-    document.getElementById("mapInner-day"+day).classList.add("active");
+    document.querySelectorAll(".mapInner").forEach(m => m.classList.remove("active"));
+    document.getElementById("mapInner-day" + day).classList.add("active");
 
     clearSelection();  // 切り替えたら選択解除
   });
