@@ -137,6 +137,25 @@
   transform: translateY(2px);
   box-shadow: inset 3px 3px 6px rgba(0,0,0,0.35);
 }
+  /* ▼ 優先度フィルター（必須／検討／予約済み） */
+  #priorityFilter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  #priorityFilter label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+  }
+  #priorityFilter input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+
 
 
 
@@ -244,6 +263,23 @@
     <input id="searchInput" type="text" placeholder="ブース番号（例：L12）">
     <button id="btnSearch">検索</button>
   </div>
+
+  <!-- ★ 優先度フィルター -->
+  <div id="priorityFilter">
+    <label>
+      <input type="checkbox" id="chkMust" checked>
+      必須（赤）
+    </label>
+    <label>
+      <input type="checkbox" id="chkMaybe" checked>
+      検討（黄）
+    </label>
+    <label>
+      <input type="checkbox" id="chkReserved" checked>
+      予約済み（青）
+    </label>
+  </div>
+
 
   <h2>ブースをタップしてください</h2>
   <div id="detail"></div>
@@ -374,6 +410,39 @@ function clearSelection() {
   refreshStateButtons();
 }
 
+/* ★ 優先度フィルターを適用する関数 */
+function applyPriorityFilter() {
+  const showMust     = chkMust.checked;
+  const showMaybe    = chkMaybe.checked;
+  const showReserved = chkReserved.checked;
+
+  let selectedHidden = false;
+
+  document.querySelectorAll(".booth").forEach(el => {
+    const status = el.dataset.status;  // "must" / "maybe" / "reserved"
+    let visible = true;
+
+    if (status === "must" && !showMust)       visible = false;
+    if (status === "maybe" && !showMaybe)     visible = false;
+    if (status === "reserved" && !showReserved) visible = false;
+
+    if (visible) {
+      el.style.display = "";
+    } else {
+      if (el.classList.contains("selected")) {
+        selectedHidden = true;
+      }
+      el.style.display = "none";
+    }
+  });
+
+  // 選択しているブースが見えなくなったら選択解除
+  if (selectedHidden) {
+    clearSelection();
+  }
+}
+
+
 /* ブースのクリックイベント */
 document.querySelectorAll(".booth").forEach(el => {
   const saved = localStorage.getItem("state_" + el.dataset.code);
@@ -403,6 +472,12 @@ const mapWrapper = document.getElementById("mapWrapper");
 const searchInput  = document.getElementById("searchInput");
 const searchButton = document.getElementById("btnSearch");
 
+/* ★ 優先度フィルター用のチェックボックス */
+const chkMust     = document.getElementById("chkMust");
+const chkMaybe    = document.getElementById("chkMaybe");
+const chkReserved = document.getElementById("chkReserved");
+
+
 /* ★ 指定したブースコードを選択＆スクロールする関数 */
 function goToBooth(codeRaw) {
   if (!codeRaw) return;
@@ -423,6 +498,14 @@ function goToBooth(codeRaw) {
   // このブースを選択
   boothEl.classList.add("selected");
   showBooth(code);
+
+  // ★ 検索したブースが見えるよう、その優先度を自動でONにする
+  const status = boothEl.dataset.status;  // "must" / "maybe" / "reserved"
+  if (status === "must")   chkMust.checked = true;
+  if (status === "maybe")  chkMaybe.checked = true;
+  if (status === "reserved") chkReserved.checked = true;
+  applyPriorityFilter();
+
 
   // ★ マップをそのブースの位置までスクロール
   const wrapperRect = mapWrapper.getBoundingClientRect();
@@ -452,6 +535,15 @@ searchInput.addEventListener("keydown", (e) => {
     goToBooth(searchInput.value);
   }
 });
+
+/* ★ 優先度フィルター：チェックが変わったら適用 */
+[chkMust, chkMaybe, chkReserved].forEach(chk => {
+  chk.addEventListener("change", applyPriorityFilter);
+});
+
+// ★ 初期表示時にもフィルターを一度適用
+applyPriorityFilter();
+
 
 
 /* mapInner クリック時に座標更新 */
