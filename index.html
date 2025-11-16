@@ -255,6 +255,47 @@
   }
 }
 
+/* ▼ ブースの基本情報をまとめるサマリー枠 */
+.booth-summary {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #e5f0ff;                 /* ほんのり青 */
+  border: 1px solid #bfdbfe;
+  font-size: 13px;
+}
+
+.booth-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.booth-summary-label {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.booth-summary-value {
+  color: #111827;
+}
+
+/* セクション見出し（「購入予定のゲーム」用） */
+.section-title {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 区切り線を少し淡くする */
+#detail hr {
+  border: none;
+  border-top: 1px dashed #d1d5db;
+  margin: 10px 0;
+}
+
 
 
 </style>
@@ -414,41 +455,71 @@ function showBooth(code){
   let html = "";
 
   // ▼ ゲームが「配列」かどうかで場合分け
-  if (Array.isArray(data.game)) {
-    // 複数ゲーム
-    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
-    html += `<p><strong>予約名：</strong>${data.note || "-"}</p>`;
-    html += `<hr>`;
-    html += `<p><strong>購入予定のゲーム</strong></p>`;
+ if (Array.isArray(data.game)) {
+  // ▼ 上部サマリー
+  html += `
+    <div class="booth-summary">
+      <div class="booth-summary-row">
+        <span class="booth-summary-label">引取時間</span>
+        <span class="booth-summary-value">${data.pickup || "-"}</span>
+      </div>
+      <div class="booth-summary-row">
+        <span class="booth-summary-label">予約名</span>
+        <span class="booth-summary-value">${data.note || "-"}</span>
+      </div>
+    </div>
+    <h3 class="section-title">購入予定のゲーム</h3>
+  `;
 
-    data.game.forEach(g => {
-      html += `
-        <div class="game-block">
-          <p><strong>タイトル：</strong>${g.game}</p>
-          <p><strong>料金：</strong>${g.price}</p>
-          <p><strong>予約：</strong>${g.reserve}</p>
-          ${g.image ? `<img src="${g.image}">` : ""}
-          <hr>
-        </div>
-      `;
-    });
-
-  } else {
-    // ▼ 単品作品も E26 と同じ構成で表示
-    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
-    html += `<p><strong>予約名：</strong>${data.note || "-"}</p>`;
-    html += `<hr>`;
-    html += `<p><strong>購入予定のゲーム</strong></p>`;
+  data.game.forEach(g => {
+    // 予約バッジ用クラス判定（"済" かどうかざっくりでOK）
+    const reserveClass =
+      g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
 
     html += `
       <div class="game-block">
-        <p><strong>タイトル：</strong>${data.game}</p>
-        <p><strong>料金：</strong>${data.price}</p>
-        <p><strong>予約：</strong>${data.reserve}</p>
-        ${data.image ? `<img src="${data.image}">` : ""}
+        <div class="game-block-header">
+          <div class="game-title-text">${g.game}</div>
+          <span class="reserve-pill ${reserveClass}">${g.reserve || "-"}</span>
+        </div>
+        <p><strong>料金：</strong>${g.price}</p>
+        ${g.image ? `<img src="${g.image}">` : ""}
       </div>
     `;
-  }
+  });
+
+
+} else {
+  // ▼ 単品作品も同じデザインで
+  html += `
+    <div class="booth-summary">
+      <div class="booth-summary-row">
+        <span class="booth-summary-label">引取時間</span>
+        <span class="booth-summary-value">${data.pickup || "-"}</span>
+      </div>
+      <div class="booth-summary-row">
+        <span class="booth-summary-label">予約名</span>
+        <span class="booth-summary-value">${data.note || "-"}</span>
+      </div>
+    </div>
+    <h3 class="section-title">購入予定のゲーム</h3>
+  `;
+
+  const reserveClass =
+    data.reserve === "済" || data.reserve === "予約済み" ? "reserved" : "unreserved";
+
+  html += `
+    <div class="game-block">
+      <div class="game-block-header">
+        <div class="game-title-text">${data.game}</div>
+        <span class="reserve-pill ${reserveClass}">${data.reserve || "-"}</span>
+      </div>
+      <p><strong>料金：</strong>${data.price}</p>
+      ${data.image ? `<img src="${data.image}">` : ""}
+    </div>
+  `;
+}
+
 
 
 
