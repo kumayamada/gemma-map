@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ゲムマMAPビューア</title>
 
 <style>
@@ -293,14 +294,13 @@ body {
 
 
 /* ▼ スマホなどでブースをタップしやすくする（見た目はそのまま） */
-@media (max-width: 768px) {
   .booth::before {
     content: "";
     position: absolute;
-    top: -15px;
-    left: -15px;
-    right: -15px;
-    bottom: -15px;
+    top: -24px;
+    left: -24px;
+    right: -24px;
+    bottom: -24px;
     /* 透明なので見た目は変わらないけど、タップ判定だけ広がる */
   }
 }
