@@ -197,23 +197,6 @@
     margin-top: 6px;
     border-radius: 6px;
   }
-/* ▼ 単品ゲームブースをカード風にする */
-.single-game-card {
-  margin: 10px 0;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-  border: 1px solid rgba(0,0,0,0.04);
-}
-
-.single-game-card img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin-top: 6px;
-  border-radius: 6px;
-}
 
 
 </style>
@@ -322,31 +305,31 @@ document.addEventListener("click", (e) => {
 
 /* ▼ ブース情報 */
 const boothData = {
-  L12:{circle:"ぺろまる工房",game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"予約名⇒オオタ",image:"PIC_L12.jpg"},
+  L12:{circle:"ぺろまる工房",game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg"},
   E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
-  L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"予約名⇒太田",image:"PIC_L23.jpg"},
+  L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"太田",image:"PIC_L23.jpg"},
 
   E26:{
     circle: "ryuseigames",
     pickup: "11:00〜12:00",
-    note: "予約名：太田（土曜日）",
+    note: "太田（土曜日）",
     game: [
       {
         game:"マジックワンズ",
         price:"2,000円",
-        reserve:"予約済み",
+        reserve:"済",
         image:"PIC_E26_1.jpg"
       },
       {
         game:"ダイヤモンドロード",
         price:"1,000円",
-        reserve:"予約済み",
+        reserve:"済",
         image:"PIC_E26_2.jpg"
       },
       {
         game:"モンスタービオトープ",
         price:"1,000円",
-        reserve:"予約済み",
+        reserve:"済",
         image:"PIC_E26_3.jpg"
       }
     ]
@@ -376,7 +359,7 @@ function showBooth(code){
   if (Array.isArray(data.game)) {
     // 複数ゲーム
     html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
-    html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;
+    html += `<p><strong>予約名：</strong>${data.note || "-"}</p>`;
     html += `<hr>`;
     html += `<p><strong>購入予定のゲーム</strong></p>`;
 
@@ -393,18 +376,22 @@ function showBooth(code){
     });
 
   } else {
-    // ▼ 単品作品をカード風に表示
+    // ▼ 単品作品も E26 と同じ構成で表示
+    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
+    html += `<p><strong>予約名：</strong>${data.note || "-"}</p>`;
+    html += `<hr>`;
+    html += `<p><strong>購入予定のゲーム</strong></p>`;
+
     html += `
-      <div class="single-game-card">
-        <p><strong>ゲーム：</strong>${data.game}</p>
+      <div class="game-block">
+        <p><strong>タイトル：</strong>${data.game}</p>
         <p><strong>料金：</strong>${data.price}</p>
         <p><strong>予約：</strong>${data.reserve}</p>
-        <p><strong>引取時間：</strong>${data.pickup}</p>
-        <p><strong>備考：</strong>${data.note}</p>
         ${data.image ? `<img src="${data.image}">` : ""}
       </div>
     `;
   }
+
 
 
   document.getElementById("detail").innerHTML = html;
