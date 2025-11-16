@@ -201,6 +201,9 @@
 
     <div class="booth" data-day="1" data-code="L23" data-status="reserved"
          style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
+
+ <div class="booth" data-day="1" data-code="E26" data-status="reserved"
+         style="left:15.3%; top:43.6%; width:0.6%; height:0.4%;"></div>
   </div>
 
   <!-- 2日目 -->
@@ -287,6 +290,32 @@ const boothData = {
   E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
   L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"予約名⇒太田",image:"PIC_L23.jpg"},
 
+  E26:{
+    circle: "ryuseigames",
+    pickup: "11:00〜12:00",
+    note: "予約名：太田（土曜日）",
+    game: [
+      {
+        game:"マジックワンズ",
+        price:"2,000円",
+        reserve:"予約済み",
+        image:"PIC_E26_1.jpg"
+      },
+      {
+        game:"ダイヤモンドロード",
+        price:"1,000円",
+        reserve:"予約済み",
+        image:"PIC_E26_2.jpg"
+      },
+      {
+        game:"モンスタービオトープ",
+        price:"1,000円",
+        reserve:"予約済み",
+        image:"PIC_E26_3.jpg"
+      }
+    ]
+  },
+
   /* ▼ ここから2日目のブース ▼ */
   V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
       pickup:"", note:"", image:"PIC_A01.jpg"},
@@ -305,16 +334,41 @@ function showBooth(code){
 
   document.querySelector("#panel h2").textContent = `【${code}】${data.circle}`;
 
-  let html = `
-    <p><strong>ゲーム：</strong>${data.game}</p>
-    <p><strong>料金：</strong>${data.price}</p>
-    <p><strong>予約：</strong>${data.reserve}</p>
-    <p><strong>引取時間：</strong>${data.pickup}</p>
-    <p><strong>備考：</strong>${data.note}</p>`;
-  if (data.image) html += `<img src="${data.image}">`;
+  let html = "";
+
+  // ▼ ゲームが「配列」かどうかで場合分け
+  if (Array.isArray(data.game)) {
+    // 複数ゲーム
+    html += `<p><strong>引取時間：</strong>${data.pickup || "-"}</p>`;
+    html += `<p><strong>備考：</strong>${data.note || "-"}</p>`;
+    html += `<hr>`;
+    html += `<p><strong>購入予定のゲーム</strong></p>`;
+
+    data.game.forEach(g => {
+      html += `
+        <div class="game-block">
+          <p><strong>タイトル：</strong>${g.game}</p>
+          <p><strong>料金：</strong>${g.price}</p>
+          <p><strong>予約：</strong>${g.reserve}</p>
+          ${g.image ? `<img src="${g.image}">` : ""}
+          <hr>
+        </div>
+      `;
+    });
+
+  } else {
+    // ▼ 通常の1作品表示
+    html += `
+      <p><strong>ゲーム：</strong>${data.game}</p>
+      <p><strong>料金：</strong>${data.price}</p>
+      <p><strong>予約：</strong>${data.reserve}</p>
+      <p><strong>引取時間：</strong>${data.pickup}</p>
+      <p><strong>備考：</strong>${data.note}</p>
+    `;
+    if(data.image) html += `<img src="${data.image}">`;
+  }
 
   document.getElementById("detail").innerHTML = html;
-
   // ボタン表示 & 購入済みボタンの状態更新
   stateButtons.style.display = "flex";
   // 詳細表示中は優先度フィルターを隠す
