@@ -81,6 +81,17 @@ body {
     margin: 0 0 12px;
   }
 
+  /* サークル名リンクの見た目を普通の文字と同じにする */
+  #panel h2 a,
+  #panel h2 a:visited {
+    color: inherit;          /* 見出しの文字色をそのまま使う */
+  }
+
+  #panel h2 a:hover {
+    text-decoration: underline;  /* マウスを乗せたときだけ下線を付けたいなら */
+  }
+
+
   #detail {
     margin-top: 4px;
   }
@@ -286,10 +297,10 @@ body {
   .booth::before {
     content: "";
     position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
     /* 透明なので見た目は変わらないけど、タップ判定だけ広がる */
   }
 }
@@ -460,7 +471,7 @@ document.addEventListener("click", (e) => {
 
 /* ▼ ブース情報 */
 const boothData = {
-  L12:{circle:"ぺろまる工房",game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg"},
+  L12:{circle:"ぺろまる工房",x:"https://x.com/peropapa1102", game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg",url:"https://gamemarket.jp/game/185055"},
   E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
   L23:{circle:"茶茶屋",game:"扇舞",price:"4,000円",reserve:"済",pickup:"15:00迄",note:"太田",image:"PIC_L23.jpg"},
 
@@ -473,19 +484,20 @@ const boothData = {
         game:"マジックワンズ",
         price:"2,000円",
         reserve:"済",
-        image:"PIC_E26_1.jpg"
+        image:"PIC_E26_1.jpg",url:"https://gamemarket.jp/game/186754"
       },
       {
         game:"ダイヤモンドロード",
         price:"1,000円",
         reserve:"済",
         image:"PIC_E26_2.jpg"
+
       },
       {
         game:"モンスタービオトープ",
         price:"1,000円",
         reserve:"済",
-        image:"PIC_E26_3.jpg"
+        image:"PIC_E26_3.jpg",url:"https://gamemarket.jp/game/185925"
       }
     ]
   },
@@ -514,7 +526,14 @@ function showBooth(code){
   const data = boothData[code];
   if (!data) return;
 
-  document.querySelector("#panel h2").textContent = `【${code}】${data.circle}`;
+   // Xリンク付きのサークル名を作る
+  const circleTitle = data.x
+    ? `<a href="${data.x}" target="_blank" rel="noopener noreferrer">${data.circle}</a>`
+    : data.circle;
+
+  // textContent → innerHTML に変更
+  document.querySelector("#panel h2").innerHTML = `【${code}】${circleTitle}`;
+
 
   let html = "";
 
@@ -536,21 +555,30 @@ function showBooth(code){
   `;
 
   data.game.forEach(g => {
-    // 予約バッジ用クラス判定（"済" かどうかざっくりでOK）
-    const reserveClass =
-      g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
+  const reserveClass =
+    g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
 
-    html += `
-      <div class="game-block">
-        <div class="game-block-header">
-          <div class="game-title-text">${g.game}</div>
-          <span class="reserve-pill ${reserveClass}">${formatReserveStatus(g.reserve)}</span>
-        </div>
-        <p><strong>料金：</strong>${g.price}</p>
-        ${g.image ? `<img src="${g.image}">` : ""}
+  html += `
+    <div class="game-block">
+      <div class="game-block-header">
+        <div class="game-title-text">${g.game}</div>
+        <span class="reserve-pill ${reserveClass}">${formatReserveStatus(g.reserve)}</span>
       </div>
-    `;
-  });
+      <p><strong>料金：</strong>${g.price}</p>
+      ${
+        g.image
+          ? (g.url
+              ? `<a href="${g.url}" target="_blank" rel="noopener noreferrer">
+                   <img src="${g.image}">
+                 </a>`
+              : `<img src="${g.image}">`
+            )
+          : ""
+      }
+    </div>
+  `;
+});
+
 
 
 } else {
@@ -570,19 +598,28 @@ function showBooth(code){
   `;
 
   const reserveClass =
-    data.reserve === "済" || data.reserve === "予約済み" ? "reserved" : "unreserved";
+  data.reserve === "済" || data.reserve === "予約済み" ? "reserved" : "unreserved";
 
-  html += `
-    <div class="game-block">
-      <div class="game-block-header">
-        <div class="game-title-text">${data.game}</div>
-        <span class="reserve-pill ${reserveClass}">${formatReserveStatus(data.reserve)}</span>
-      </div>
-      <p><strong>料金：</strong>${data.price}</p>
-      ${data.image ? `<img src="${data.image}">` : ""}
+html += `
+  <div class="game-block">
+    <div class="game-block-header">
+      <div class="game-title-text">${data.game}</div>
+      <span class="reserve-pill ${reserveClass}">${formatReserveStatus(data.reserve)}</span>
     </div>
-  `;
-}
+    <p><strong>料金：</strong>${data.price}</p>
+    ${
+      data.image
+        ? (data.url
+            ? `<a href="${data.url}" target="_blank" rel="noopener noreferrer">
+                 <img src="${data.image}">
+               </a>`
+            : `<img src="${data.image}">`
+          )
+        : ""
+    }
+  </div>
+`;
+
 
 
 
@@ -597,6 +634,7 @@ function showBooth(code){
 
   // ★ マップ側のハイライト更新（ラベル＋ピカッ）
   updateBoothHighlight(code);
+}
 }
 
 /* ▼ 購入済みボタンの見た目更新 */
@@ -857,7 +895,7 @@ chkReserved.addEventListener("change", applyPriorityFilter);
 /* 日付タブ切替時もフィルターをかけ直す */
 document.querySelectorAll("#dayTabs button").forEach(btn => {
   btn.addEventListener("click", () => {
-    setTimeout(applyPrioritayFilter, 20);
+    setTimeout(applyPriorityFilter, 20);
   });
 });
 
