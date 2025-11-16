@@ -330,6 +330,12 @@ body {
   margin: 10px 0;
 }
 
+/* ▼ 検索結果メッセージ表示用 */
+.search-message {
+  font-size: 12px;
+  color: #b91c1c;          /* 赤めの文字色 */
+  margin: -4px 0 8px 2px;  /* 検索ボックスに少し寄せる */
+}
 
 
 </style>
@@ -390,6 +396,7 @@ body {
     <input id="searchInput" type="text" placeholder="ブース番号（例：L12）">
     <button id="btnSearch">検索</button>
   </div>
+  <div id="searchMessage" class="search-message"></div>
 
   <!-- 優先度フィルター -->
   <div id="priorityFilter">
@@ -421,6 +428,7 @@ const priorityFilter = document.getElementById("priorityFilter");
 const stateButtons   = document.getElementById("stateButtons");
 const btnBought      = document.getElementById("btnBought");
 const btnClear       = document.getElementById("btnClear");
+const searchMessage  = document.getElementById("searchMessage"); 
 
 /* ▼ 座標計算（アクティブな地図だけ処理） */
 document.addEventListener("click", (e) => {
@@ -738,13 +746,17 @@ function findBoothElement(raw) {
 }
 
 
+// ▼ 入力文字列からブース要素を探す（ブース番号 or サークル名・ゲーム名の部分一致）
 function goToBooth(raw){
   if (!raw) return;
+
+  // まずメッセージをリセット
+  searchMessage.textContent = "";
 
   // ① ブース番号 or サークル名からブース要素を探す
   const boothEl = findBoothElement(raw);
   if (!boothEl) {
-    alert(`「${raw}」に一致するブース／サークルは見つかりませんでした`);
+    searchMessage.textContent = `「${raw}」に一致するブース／サークルは見つかりませんでした`;
     return;
   }
 
@@ -770,7 +782,11 @@ function goToBooth(raw){
 
   // ⑤ マップ上で見える位置までスクロール
   boothEl.scrollIntoView({ behavior:"smooth", block:"center", inline:"center" });
+
+  // ⑥ スマホでキーボードを閉じる
+  searchInput.blur();
 }
+
 
 /* ▼ 日付タブ切替 */
 document.querySelectorAll("#dayTabs button").forEach(btn => {
@@ -820,7 +836,7 @@ chkReserved.addEventListener("change", applyPriorityFilter);
 /* 日付タブ切替時もフィルターをかけ直す */
 document.querySelectorAll("#dayTabs button").forEach(btn => {
   btn.addEventListener("click", () => {
-    setTimeout(applyPriorityFilter, 20);
+    setTimeout(applyPrioritayFilter, 20);
   });
 });
 
