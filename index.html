@@ -197,6 +197,24 @@
     margin-top: 6px;
     border-radius: 6px;
   }
+/* ▼ 単品ゲームブースをカード風にする */
+.single-game-card {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.single-game-card img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 6px;
+  border-radius: 6px;
+}
+
 
 </style>
 </head>
@@ -375,16 +393,19 @@ function showBooth(code){
     });
 
   } else {
-    // ▼ 通常の1作品表示
+    // ▼ 単品作品をカード風に表示
     html += `
-      <p><strong>ゲーム：</strong>${data.game}</p>
-      <p><strong>料金：</strong>${data.price}</p>
-      <p><strong>予約：</strong>${data.reserve}</p>
-      <p><strong>引取時間：</strong>${data.pickup}</p>
-      <p><strong>備考：</strong>${data.note}</p>
+      <div class="single-game-card">
+        <p><strong>ゲーム：</strong>${data.game}</p>
+        <p><strong>料金：</strong>${data.price}</p>
+        <p><strong>予約：</strong>${data.reserve}</p>
+        <p><strong>引取時間：</strong>${data.pickup}</p>
+        <p><strong>備考：</strong>${data.note}</p>
+        ${data.image ? `<img src="${data.image}">` : ""}
+      </div>
     `;
-    if(data.image) html += `<img src="${data.image}">`;
   }
+
 
   document.getElementById("detail").innerHTML = html;
   // ボタン表示 & 購入済みボタンの状態更新
