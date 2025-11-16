@@ -215,6 +215,18 @@
     margin-top: 8px;
     border-radius: 10px;
   }
+/* ▼ スマホなどでブースをタップしやすくする（見た目はそのまま） */
+@media (max-width: 768px) {
+  .booth::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    /* 透明なので見た目は変わらないけど、タップ判定だけ広がる */
+  }
+}
 
 
 
