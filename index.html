@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ゲムマMAPビューア</title>
 
 <style>
@@ -215,6 +216,49 @@
     margin-top: 8px;
     border-radius: 10px;
   }
+
+  .game-block img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 8px;
+    border-radius: 10px;
+  }
+
+/* ▼ ゲームカード右上のステータスバッジ */
+.game-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.game-title-text {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ピル型バッジ */
+.reserve-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 状態別の色 */
+.reserve-pill.reserved {        /* 予約済 */
+  background: #dcfce7;
+  color: #166534;
+}
+
+.reserve-pill.none, 
+.reserve-pill.unreserved {      /* 予約未 など */
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
 /* ▼ スマホなどでブースをタップしやすくする（見た目はそのまま） */
 @media (max-width: 768px) {
   .booth::before {
