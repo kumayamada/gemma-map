@@ -538,6 +538,47 @@ document.querySelectorAll("#dayTabs button").forEach(btn => {
   });
 });
 
+/* ▼ 優先度フィルター処理 */
+const chkMust     = document.getElementById("chkMust");
+const chkMaybe    = document.getElementById("chkMaybe");
+const chkReserved = document.getElementById("chkReserved");
+
+function applyPriorityFilter() {
+  const activeMap = getActiveMap();
+  if (!activeMap) return;
+
+  const showMust     = chkMust.checked;
+  const showMaybe    = chkMaybe.checked;
+  const showReserved = chkReserved.checked;
+
+  activeMap.querySelectorAll(".booth").forEach(b => {
+    const status = b.dataset.status;
+
+    let visible = true;
+    if (status === "must"     && !showMust)     visible = false;
+    if (status === "maybe"    && !showMaybe)    visible = false;
+    if (status === "reserved" && !showReserved) visible = false;
+
+    b.style.display = visible ? "block" : "none";
+  });
+}
+
+/* チェックボックス変更時に絞り込み */
+chkMust.addEventListener("change", applyPriorityFilter);
+chkMaybe.addEventListener("change", applyPriorityFilter);
+chkReserved.addEventListener("change", applyPriorityFilter);
+
+/* 日付タブ切替時もフィルターをかけ直す */
+document.querySelectorAll("#dayTabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    setTimeout(applyPriorityFilter, 20);
+  });
+});
+
+/* 初期適用 */
+applyPriorityFilter();
+
+
 /* ========= JS 終了 ========= */
 </script>
 
