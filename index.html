@@ -292,6 +292,13 @@ body {
 }
 
 
+/* 検討中（オレンジ） */
+.reserve-pill.pending {         /* 検討中 */
+  background: #ffedd5;          /* 薄いオレンジ */
+  color: #c05621;               /* 文字は濃いオレンジ */
+}
+
+
 /* ▼ スマホなどでブースをタップしやすくする（見た目はそのまま） */
   .booth::before {
     content: "";
@@ -411,6 +418,9 @@ body {
     <div class="booth" data-day="1" data-code="78" data-status="must"
          style="left:22.7%; top:15.6%; width:1.22%; height:3.1%;"></div>
 
+    <div class="booth" data-day="1" data-code="23" data-status="must"
+         style="left:79.5%; top:29.0%; width:2.9%; height:7%;"></div>
+
 
   </div>
 
@@ -497,7 +507,7 @@ document.addEventListener("click", (e) => {
 /* ▼ ブース情報 */
 const boothData = {
   L12:{circle:"ぺろまる工房",circleUrl:"https://x.com/peropapa1102", game:"WicFluffy（ウィック・フラフィー）",price:"3,000円",reserve:"済",pickup:"11:00〜12:00",note:"オオタ",image:"PIC_L12.jpg",url:"https://gamemarket.jp/game/185055"},
-  E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"未",pickup:"",note:"",image:"PIC_E30.jpg"},
+  E30:{circle:"てねずっとgames",game:"大きそうなかぶ",price:"2,000円",reserve:"検討中",pickup:"",note:"",image:"PIC_E30.jpg"},
   L23:{
   circle:"茶々屋",
   circleUrl:"https://x.com/chachayaGame",
@@ -598,6 +608,61 @@ const boothData = {
   url:"https://booth.pm/zh-tw/items/6957324?srsltid=AfmBOool-zByPEUTrhkRd4MmYhRo6QK2NoXGbbvcgRVL19FrM9Yd4Knp"
 },
 
+  33:{
+    circle: "バネスト",circleUrl:"https://x.com/squad_banesto",
+    pickup: "―",
+    note: "―",
+    game: [
+      {
+        game:"ボンボヤージュボイジャー",
+        price:"2,500円",
+        reserve:"未",
+        image:"PIC_33_1.jpg",url:"https://banesto.nagoya/view/item/000000010414?srsltid=AfmBOoqSZyn60GFfd8cu_j1UwJ-3mdY4TLMrKtBw2SymlQzf2UvWu_Sw"
+      },
+      {
+        game:"M.A.R.Iといかれた工場",
+        price:"1,980円",
+        reserve:"検討中",
+        image:"PIC_33_2.jpg",url:"https://banesto.nagoya/view/item/000000008894"
+
+      }
+    ]
+  },
+
+  23:{
+    circle: "ジーピー",circleUrl:"https://x.com/gpinc_jp",
+    pickup: "―",
+    note: "―",
+    game: [
+      {
+        game:"ヒットスター",
+        price:"3,760円",
+        reserve:"未",
+        image:"PIC_23_1.jpg",url:"https://www.gp-inc.jp/boardgame_hitster.htmlsrsltid=AfmBOoqSZyn60GFfd8cu_j1UwJ-3mdY4TLMrKtBw2SymlQzf2UvWu_Sw"
+      },
+      {
+        game:"ザ・クルー　ファミリー",
+        price:"3,000円",
+        reserve:"検討中",
+        image:"PIC_23_2.jpg",url:"https://www.gp-inc.jp/cardgame_thecrewf.html"
+
+      }
+    ]
+  },
+
+  M34:{
+  circle:"",
+  circleUrl:"https://x.com/shi_ten_nou",
+  game:"禁足地",
+  price:"2,200円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_M34.jpg",
+  url:"https://suppe.sugorokuya.jp/items/220628"
+},
+
+
 
   /* ▼ ここから2日目のブース ▼ */
   V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
@@ -652,8 +717,15 @@ function showBooth(code){
 
   // ▼ 1枚分のゲームカードを作る共通関数
   function buildGameBlock(g){
-    const reserveClass =
-      g.reserve === "済" || g.reserve === "予約済み" ? "reserved" : "unreserved";
+    // 予約状態に応じてクラスを切り替え
+    let reserveClass = "unreserved";  // デフォルトは「予約未」
+
+    if (g.reserve === "済" || g.reserve === "予約済" || g.reserve === "予約済み") {
+      reserveClass = "reserved";      // 緑（予約済）
+    } else if (g.reserve === "検討中") {
+      reserveClass = "pending";       // オレンジ（検討中）
+    }
+
 
     let imgHtml = "";
     if (g.image) {
