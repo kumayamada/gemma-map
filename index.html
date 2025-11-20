@@ -306,7 +306,7 @@ body {
     top: -21px;
     left: -21px;
     right: -21px;
-    bottom: -21px;
+    bottom: -5px;
     /* 透明なので見た目は変わらないけど、タップ判定だけ広がる */
   }
 
@@ -382,7 +382,7 @@ body {
   <div id="mapInner-day1" class="mapInner active">
     <img src="map-day1.png">
 
-    <div class="booth" data-day="1" data-code="L12" data-status="must"
+    <div class="booth" data-day="1" data-code="L12" data-status="maybe"
          style="left:53.8%; top:22.8%; width:0.6%; height:0.4%;"></div>
 
     <div class="booth" data-day="1" data-code="E30" data-status="maybe"
@@ -424,6 +424,41 @@ body {
     <div class="booth" data-day="1" data-code="V19" data-status="maybe"
          style="left:59.3%; top:63.2%; width:0.6%; height:0.4%;"></div>
 
+    <div class="booth" data-day="1" data-code="84" data-status="maybe"
+         style="left:9.8%; top:55.7%; width:2.9%; height:3.1%;"></div>
+
+    <div class="booth" data-day="1" data-code="E30" data-status="maybe"
+         style="left:59.3%; top:63.2%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="18" data-status="maybe"
+         style="left:84.2%; top:58.9%; width:1.22%; height:3.1%;"></div>
+
+    <div class="booth" data-day="1" data-code="特設9" data-status="maybe"
+         style="left:93.9%; top:42.4%; width:2.9%; height:3.1%;"></div>
+
+    <div class="booth" data-day="1" data-code="U15" data-status="maybe"
+         style="left:48.9%; top:58.0%; width:0.3%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="X21" data-status="maybe"
+         style="left:60.9%; top:67.5%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="横21" data-status="maybe"
+         style="left:57.3%; top:37.1%; width:0.3%; height:0.4%;"></div>
+
+    <div class="booth" data-day="1" data-code="49" data-status="maybe"
+         style="left:59.4%; top:72.7%; width:1.22%; height:3.1%;"></div>
+
+    <div class="booth" data-day="1" data-code="53" data-status="maybe"
+         style="left:54.0%; top:15.7%; width:2.9%; height:3.1%;"></div>
+
+    <div class="booth" data-day="1" data-code="マダミス" data-status="maybe"
+         style="left:79.4%; top:21.9%; width:6.0%; height:3.3%;"></div>
+
+    <div class="booth" data-day="1" data-code="F05" data-status="maybe"
+         style="left:17.7%; top:46.9%; width:0.6%; height:0.4%;"></div>
+
+    <div class="booth" data-day="2" data-code="55" data-status="must"
+         style="left:49.6%; top:15.6%; width:1.22%; height:3.1%"></div>
 
   </div>
 
@@ -431,14 +466,14 @@ body {
   <div id="mapInner-day2" class="mapInner">
     <img src="map-day2.png">
 
-    <div class="booth" data-day="2" data-code="V6" data-status="must"
-         style="left:48.1%; top:60.9%; width:0.6%; height:0.4%;"></div>
+    <div class="booth" data-day="2" data-code="P34" data-status="maybe"
+         style="left:56.9%; top:36.2%; width:0.6%; height:0.4%;"></div>
 
-    <div class="booth" data-day="2" data-code="E30" data-status="maybe"
-         style="left:18.5%; top:43.6%; width:0.6%; height:0.4%;"></div>
+    <div class="booth" data-day="2" data-code="Q62" data-status="maybe"
+         style="left:59.5%; top:45.6%; width:0.3%; height:0.4%;"></div>
 
-    <div class="booth" data-day="2" data-code="L23" data-status="reserved"
-         style="left:43.4%; top:23.7%; width:0.6%; height:0.4%;"></div>
+    <div class="booth" data-day="2" data-code="55" data-status="must"
+         style="left:50.3%; top:14.4%; width:1.22%; height:3.1%;"></div>
   </div>
 
   <div id="coordDisplay">左右% / 上下%：-</div>
@@ -524,33 +559,18 @@ const boothData = {
   url:"https://gamemarket.jp/booth/6181"
 },
 
-
   E26:{
-    circle: "ryuseigames",circleUrl:"https://x.com/R_Game_Official",
-    pickup: "11:00〜12:00",
-    note: "太田（土曜日）",
-    game: [
-      {
-        game:"マジックワンズ",
-        price:"2,000円",
-        reserve:"済",
-        image:"PIC_E26_1.jpg",url:"https://gamemarket.jp/game/186754"
-      },
-      {
-        game:"ダイヤモンドロード",
-        price:"1,000円",
-        reserve:"済",
-        image:"PIC_E26_2.jpg"
+  circle:"Ryusei gammes",
+  circleUrl:"https://x.com/R_Game_Official",
+  game:"マジックワンズ",
+  price:"2,000円",
+  reserve:"済",
+  pickup:"11:00〜12:00",
+  note:"太田",
+  image:"PIC_E26_1.jpg",
+  url:"https://gamemarket.jp/game/186754"
+},
 
-      },
-      {
-        game:"モンスタービオトープ",
-        price:"1,000円",
-        reserve:"済",
-        image:"PIC_E26_3.jpg",url:"https://gamemarket.jp/game/185925"
-      }
-    ]
-  },
 
   H29:{
   circle:"Liner Note",
@@ -576,17 +596,31 @@ const boothData = {
   url:"https://gamemarket.jp/game/181900"
 },
 
+
+
   G48:{
-  circle:"OKAZU brand",
-  circleUrl:"https://x.com/okazu_900jaku",
-  game:"さらサーチ",
-  price:"1,700円",
-  reserve:"未",
-  pickup:"―",
-  note:"―",
-  image:"PIC_G48.jpg",
-  url:"https://gamemarket.jp/game/186091"
-},
+    circle: "OKAZU brand",circleUrl:"https://x.com/okazu_900jaku",
+    pickup: "―",
+    note: "―",
+    game: [
+      {
+        game:"さらサーチ",
+        price:"1,700円",
+        reserve:"未",
+        image:"PIC_G48_1.jpg",url:"https://gamemarket.jp/game/186091"
+      },
+
+      {
+        game:"コンコード",
+        price:"1,700円",
+        reserve:"検討中",
+        image:"PIC_G48_2.jpg",url:"https://gamemarket.jp/game/180826"
+
+      }
+    ]
+  },
+
+
 
   M34:{
   circle:"知転脳",
@@ -622,6 +656,12 @@ const boothData = {
         price:"2,500円",
         reserve:"未",
         image:"PIC_33_1.jpg",url:"https://banesto.nagoya/view/item/000000010414?srsltid=AfmBOoqSZyn60GFfd8cu_j1UwJ-3mdY4TLMrKtBw2SymlQzf2UvWu_Sw"
+      },
+ {
+        game:"ランドマーク(ドイツ語版)",
+        price:"6,000円",
+        reserve:"検討中",
+        image:"PIC_33_3.jpg",url:"https://banesto.nagoya/view/item/000000010415?srsltid=AfmBOope_h5cWg00wMMckL2znBz95a9OB8Ova95YcCsd8pVF5Lit2QzA"
       },
       {
         game:"M.A.R.Iといかれた工場",
@@ -678,14 +718,225 @@ const boothData = {
   url:"https://www.rigoler.jp/2025/10/18/%E3%83%90%E3%83%83%E3%82%AF%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AA%E3%83%BC%E3%82%BA%E3%80%80%E6%B0%B7%E9%9B%AA%E3%81%AE%E4%B8%8B%E3%81%A7%E3%80%80%E3%83%AA%E3%82%B4%E3%83%AC-%E3%82%AA%E3%83%AA%E3%82%B8/"
 },
 
+  V19:{
+  circle:"HoF GAMES",
+  circleUrl:"https://x.com/games_hof",
+  game:"VSクレイジーピッチングオクトパス",
+  price:"3,500円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_V19.jpg",
+  url:"https://gamemarket.jp/blog/194995"
+},
+
+  84:{
+  circle:"14games",
+  circleUrl:"https://x.com/14games_",
+  game:"シュプールノート",
+  price:"2,500円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_84.jpg",
+  url:"https://gamemarket.jp/game/186740"
+},
+
+  18:{
+  circle:"WWBG",
+  circleUrl:"https://x.com/wwbg_boardgames",
+  game:"ラストランタン",
+  price:"5,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_18.jpg",
+  url:"https://www.wonderfulworldbg.com/games/last-lantern/"
+},
+
+  18:{
+  circle:"WWBG",
+  circleUrl:"https://x.com/wwbg_boardgames",
+  game:"ラストランタン",
+  price:"5,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_18.jpg",
+  url:"https://www.wonderfulworldbg.com/games/last-lantern/"
+},
+
+  特設9:{
+  circle:"本当に面白いユーロゲームの世界",
+  circleUrl:"",
+  game:"本当に面白いユーロゲームの世界",
+  price:"1,650円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_tokusetsu9.jpg",
+  url:"https://gamemarket.jp/booth/4821"
+},
+
+  U15:{
+  circle:"ぽにょゲーム",
+  circleUrl:"https://x.com/Po_ha_na",
+  game:"うけどんのいくらあつめ",
+  price:"2,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_U15.jpg",
+  url:"https://x.com/namieshinka/status/1973674743841894717"
+},
+
+  X21:{
+  circle:"楠Games",
+  circleUrl:"https://x.com/kusunoki_games",
+  game:"とおりゃんせ",
+  price:"2,200円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_X21.jpg",
+  url:"https://note.com/kusunokigames/n/nfca11c4902e4"
+},
+
+  横21:{
+  circle:"PG Games",
+  circleUrl:"https://x.com/PaixGuild",
+  game:"ミセスサンドイッチ",
+  price:"1,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_yoko21.jpg",
+  url:"https://gamemarket.jp/game/186287"
+},
+
+  49:{
+    circle: "Honu Games",circleUrl:"https://x.com/Honu_Games",
+    pickup: "―",
+    note: "―",
+    game: [
+      {
+        game:"コバ",
+        price:"3,000円",
+        reserve:"済",
+        image:"PIC_49_1.jpg",url:"https://honugames-post.fanbox.cc/posts/10885870"
+      },
+      {
+        game:"デリキャット",
+        price:"2,750円",
+        reserve:"検討中",
+        image:"PIC_49_2.jpg",url:"https://honugames-post.fanbox.cc/posts/10705496"
+
+      }
+    ]
+  },
+
+  53:{
+  circle:"Playte",
+  circleUrl:"https://x.com/Playte_games",
+  game:"Pentorini",
+  price:"2,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_53.jpg",
+  url:"https://gamemarket.jp/game/186907"
+},
+
+  マダミス:{
+  circle:"studio ozon",
+  circleUrl:"https://ozon.jp/mmb/",
+  game:"有限探偵ミネルバ",
+  price:"3,850円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_madamisu1.jpg",
+  url:"https://ozon.jp/18831/"
+},
+
+  F05:{
+  circle:"シロゲーム",
+  circleUrl:"https://x.com/shironorikura",
+  game:"うらガエル",
+  price:"1,000円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_F05.jpg",
+  url:"https://gamemarket.jp/game/186339"
+},
+
+  55:{
+  circle:"JISF 一般社団法人日本鉄鋼連盟",
+  circleUrl:"https://x.com/steel_is_light",
+  game:"うらガエル",
+  price:"0円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_55.jpg",
+  url:"https://gamemarket.jp/booth/5662"
+},
+
+  A09:{
+  circle:"EX FIRST GAMES",
+  circleUrl:"https://x.com/ex1stgames",
+  game:"バナナボーイVSユニコーン",
+  price:"1,000円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_A09.jpg",
+  url:"https://gamemarket.jp/game/184797"
+},
 
 
   /* ▼ ここから2日目のブース ▼ */
-  V6:{circle:"Studio ABC", game:"星くずラビリンス", price:"2,500円", reserve:"未",
-      pickup:"", note:"", image:"PIC_A01.jpg"},
-  B14:{circle:"オレオレ堂", game:"ハムスター帝国", price:"1,800円", reserve:"済",
-      pickup:"13:00〜14:00", note:"予約名⇒オオタ", image:"PIC_B14.jpg"}
-};
+
+  P34:{
+  circle:"nitpick",
+  circleUrl:"https://x.com/nitpick_games",
+  game:"オーダーバーガーメーカー",
+  price:"1,500円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_P34.jpg",
+  url:"https://gamemarket.jp/game/187052"
+},
+
+  Q62:{
+  circle:"デザイート",
+  circleUrl:"https://x.com/_Desieet",
+  game:"いんだすトリ",
+  price:"1,500円",
+  reserve:"検討中",
+  pickup:"―",
+  note:"―",
+  image:"PIC_Q62.jpg",
+  url:"https://gamemarket.jp/game/187052"
+},
+
+  55:{
+  circle:"JISF 一般社団法人日本鉄鋼連盟",
+  circleUrl:"https://x.com/steel_is_light",
+  game:"リサイクルハンター",
+  price:"0円",
+  reserve:"未",
+  pickup:"―",
+  note:"―",
+  image:"PIC_55.jpg",
+  url:"https://gamemarket.jp/booth/5662"
+}
+
+
+
+};  
 
 // ▼ 予約表示を「済 → 予約済」「未 → 予約未」に統一
 function formatReserveStatus(status) {
