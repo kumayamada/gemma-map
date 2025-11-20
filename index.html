@@ -369,6 +369,31 @@ body {
   }
 }
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+/* ▼ Excel 表の見た目調整 */
+.excel-view {
+  margin-top: 8px;
+  max-height: 300px;      /* 必要なら高さ調整してね */
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+}
+
+.excel-view table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+
+.excel-view th,
+.excel-view td {
+  border: 1px solid #d1d5db;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
 
 
 </style>
@@ -515,11 +540,47 @@ body {
     <button id="btnBought">✔ 購入済み</button>
     <button id="btnClear">↩ 元に戻す</button>
   </div>
-</div>
 
+
+  <!-- ▼ Excel 買い物リスト表示エリア -->
+  <h3 class="section-title">📝 買い物リスト（Excel）</h3>
+  <div id="excelView" class="excel-view"></div>
 
 <script>
 /* ========= ここから JS ========= */
+
+/* ▼ Excel（ゲムマ秋2025.xlsx）を読み込んで表として表示 */
+function loadExcelList() {
+  // HTMLファイルと同じフォルダに「ゲムマ秋2025.xlsx」を置く想定
+  fetch("ゲムマ秋2025.xlsx")
+    .then(res => res.arrayBuffer())
+    .then(buf => {
+      const wb = XLSX.read(buf, { type: "array" });
+      // 1枚目のシートを読む
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+
+      // シートを HTML テーブルに変換（ヘッダー・フッターはいらないので消す）
+      const html = XLSX.utils.sheet_to_html(ws, { header: "", footer: "" });
+
+      const container = document.getElementById("excelView");
+      container.innerHTML = html;
+
+      // 自動生成された table にクラスを付けて見た目を整える
+      const table = container.querySelector("table");
+      if (table) {
+        table.classList.add("excel-table");
+      }
+    })
+    .catch(err => {
+      console.error("Excel 読み込みエラー:", err);
+      const container = document.getElementById("excelView");
+      if (container) {
+        container.textContent = "Excel の読み込みに失敗しました…";
+      }
+    });
+}
+
 
 function getActiveMap() {
   return document.querySelector('.mapInner.active');
@@ -1331,6 +1392,9 @@ document.querySelectorAll("#dayTabs button").forEach(btn => {
 
 /* 初期適用 */
 applyPriorityFilter();
+
+/* ページ読み込み時に Excel の買い物リストを読み込む */
+loadExcelList();
 
 
 /* ========= JS 終了 ========= */
